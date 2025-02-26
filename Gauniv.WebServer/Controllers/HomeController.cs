@@ -24,7 +24,10 @@ namespace Gauniv.WebServer.Controllers
         public IActionResult Index()
         {
             // Retrieve the list of games from the database
-            List<Game> games = _context.Games.OrderBy(g => g.Id).ToList();
+            List<Game> games = _context.Games
+                .Include(g => g.Categories)
+                .OrderBy(g => g.Id)
+                .ToList();
             //TODO: Order the list by the id
 
             return View(new IndexViewModel { Games = games });

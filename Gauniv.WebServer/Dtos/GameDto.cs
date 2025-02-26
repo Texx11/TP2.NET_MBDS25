@@ -12,6 +12,6 @@ namespace Gauniv.WebServer.Dtos
         public String? Description { get; set; }
         public BinaryData? payload { get; set; }
         public float price { get; set; }
-        public String[]? categories { get; set; }
+        public ICollection<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
     }
 }

@@ -27,6 +27,8 @@ namespace Gauniv.WebServer.Controllers
         {
             var model = new GameViewModel
             {
+                Categories = _context.Categories.ToList(),
+
                 AvailableCategories = _context.Categories
                         .Select(c => new SelectListItem
                         {

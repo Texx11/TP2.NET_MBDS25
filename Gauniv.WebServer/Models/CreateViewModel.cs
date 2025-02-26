@@ -33,7 +33,6 @@ namespace Gauniv.WebServer.Models
     public class IndexViewModel()
     {
         public required List<Game> Games { get; set; }
-
     }
 
     /**
@@ -56,6 +55,6 @@ namespace Gauniv.WebServer.Models
         public int Id { get; set; }
         public String? Name { get; set; }
 
-        public List<Category>? Categories { get; set; }
+        public required List<Category> Categories {get; set;}
     }
 }
