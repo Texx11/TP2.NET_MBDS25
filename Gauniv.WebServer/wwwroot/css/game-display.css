@@ -96,11 +96,33 @@ h1{
 
 /* Conteneur du prix pour le coller en bas */
 .price-container {
-    background-color: #137EAF;
-    color: white;
+    display: flex;
+    justify-content: space-around;
+    color: #333;
     padding: 10px;
     font-size: 1.1rem;
     font-weight: bold;
     text-align: center;
     border-radius: 10px;
 }
+.price-container p {
+    font-size: 1rem;
+    font-weight: normal;
+}
+.game-bottom {
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.style-button {
+    font-weight: bold;
+    padding: 5px 20px;
+    background-color: #137EAF;
+    border: none;
+}
+
+    .style-button:hover {
+        transform: scale(1.05);
+        background-color: #137EAF;
+    }

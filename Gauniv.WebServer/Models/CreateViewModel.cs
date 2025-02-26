@@ -15,9 +15,12 @@ namespace Gauniv.WebServer.Models
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-        public float? Price { get; set; }
-        public IFormFile? Content { get; set; }
-        public int[]? Categories { get; set; }
+
+        public string? Description { get; set; }
+        public float Price { get; set; }
+        //public IFormFile? Content { get; set; }
+        public String[]? Categories { get; set; }
+        public byte[]? Payload { get; set; }
     }
 
     /**
@@ -38,6 +41,6 @@ namespace Gauniv.WebServer.Models
         public String? Description { get; set; }
         public float Price { get; set; }
         public String[]? Categories { get; set; }
-        public byte[]? payload { get; set; }
+        public byte[]? Payload { get; set; }
     }
 }
