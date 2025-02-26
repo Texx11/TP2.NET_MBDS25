@@ -7,6 +7,7 @@ using Gauniv.WebServer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using X.PagedList.Extensions;
@@ -30,11 +31,17 @@ namespace Gauniv.WebServer.Controllers
         [HttpGet]
         public IActionResult ListCategory()
         {
-            List<Category> categories = _context.Categories.OrderBy(g => g.Id).ToList();
+            List<Category> categories = _context.Categories.OrderBy(c => c.Id).ToList();
             var model = new CategoryViewModel
             {
                 Categories = categories
             };
+            
+            foreach(var c in categories)
+            {
+                Debug.Print(c.Id + " : " + c.Name);
+            }
+
             return View(model);
         }
 
@@ -50,12 +57,13 @@ namespace Gauniv.WebServer.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
+                Categories = _context.Categories.OrderBy(c => c.Id).ToList()
             };
             return View(model);
         }
 
-        [HttpPost]
-        public IActionResult DeleteCategory(int id)
+        [HttpGet]
+        public IActionResult Delete(int id)
         {
             var category = _context.Categories.Find(id);
             if (category == null)

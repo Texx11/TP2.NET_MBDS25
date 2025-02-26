@@ -51,7 +51,8 @@ namespace Gauniv.WebServer.Controllers
                         Value = c.Id.ToString(),
                         Text = c.Name
                     }).ToList(),
-                SelectedCategoryIds = game.Categories.Select(c => c.Id).ToList()
+                SelectedCategoryIds = game.Categories.Select(c => c.Id).ToList(),
+                Categories = _context.Categories.ToList()
             };
 
             return View(model);

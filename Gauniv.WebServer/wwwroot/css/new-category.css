@@ -44,3 +44,22 @@
         align-items: center;
         gap: 5px;
     }
+
+td{
+    align-content: center;
+}
+
+.style-button {
+    font-weight: bold;
+    margin: 5px 10px;
+    padding: 7px 25px;
+    border: none;
+}
+.btn-primary {
+    background-color: #137EAF;
+}
+
+.style-button:hover {
+    transform: scale(1.05);
+    background-color: #137EAF;
+}
