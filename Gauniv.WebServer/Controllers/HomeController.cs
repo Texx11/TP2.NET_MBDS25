@@ -36,5 +36,23 @@ namespace Gauniv.WebServer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            // Trouver le jeu à supprimer
+            var game = _context.Games.Find(id);
+            if (game == null)
+            {
+                return NotFound(); // Si le jeu n'existe pas
+            }
+
+            // Supprimer le jeu de la base de données
+            _context.Games.Remove(game);
+            _context.SaveChanges();
+
+            // Rediriger vers l'index après la suppression
+            return RedirectToAction("Index");
+        }
     }
 }
