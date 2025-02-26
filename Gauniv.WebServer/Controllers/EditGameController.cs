@@ -28,6 +28,7 @@ namespace Gauniv.WebServer.Controllers
         }
 
         // Action GET pour afficher le formulaire d'édition du jeu
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult EditGame(int id)
         {

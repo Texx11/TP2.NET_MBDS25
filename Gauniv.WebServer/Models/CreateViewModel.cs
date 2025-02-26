@@ -33,6 +33,7 @@ namespace Gauniv.WebServer.Models
     public class IndexViewModel()
     {
         public required List<Game> Games { get; set; }
+        public List<int> OwnedGameIds { get; set; } = new();
     }
 
     /**
@@ -57,4 +58,6 @@ namespace Gauniv.WebServer.Models
 
         public required List<Category> Categories {get; set;}
     }
+
+
 }

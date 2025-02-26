@@ -1,18 +1,12 @@
 ﻿using Gauniv.WebServer.Data;
-using Gauniv.WebServer.Websocket;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 
 namespace Gauniv.WebServer.Services
 {
     public class SetupService : IHostedService
     {
-        private ApplicationDbContext? applicationDbContext;
         private readonly IServiceProvider serviceProvider;
-        private Task? task;
 
         public SetupService(IServiceProvider serviceProvider)
         {
@@ -21,29 +15,68 @@ namespace Gauniv.WebServer.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            using (var scope = serviceProvider.CreateScope()) // this will use `IServiceScopeFactory` internally
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+            // Appliquer d'éventuelles migrations en attente
+            if (context.Database.GetPendingMigrations().Any())
             {
-                applicationDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
-
-                if(applicationDbContext is null)
-                {
-                    throw new Exception("ApplicationDbContext is null");
-                }
-
-                if (applicationDbContext.Database.GetPendingMigrations().Any())
-                {
-                    applicationDbContext.Database.Migrate();
-                }
-
-                // Ajouter ici les données que vous insérer dans votre DB au démarrage
-                // If the game is already in the DB, do not add it
-                // applicationDbContext.Games.Add(new Game { Name = "Counter Strike", Description = "War game 5v5 with guns and russians", price = 19.99F });
-                //applicationDbContext.Games.Add(new Game { Name = "League of Legends", Description = "5v5 face to face game with champions to destroy nexus", price = 4.99F });
-                //applicationDbContext.Games.Add(new Game { Name = "Rocket League", Description = "Car and football fusion to make this game", price = 9.99F });
-                applicationDbContext.SaveChanges();
-
-                return Task.CompletedTask;
+                context.Database.Migrate();
             }
+
+            // 1) Créer le rôle Admin s’il n’existe pas
+            if (!roleManager.RoleExistsAsync("Admin").Result)
+            {
+                var r = new IdentityRole("Admin");
+                roleManager.CreateAsync(r).Wait();
+            }
+
+            // 2) Création d’un user Admin de test si besoin
+            const string adminEmail = "admin@oui.com";
+            var adminUser = userManager.FindByEmailAsync(adminEmail).Result;
+            if (adminUser == null)
+            {
+                adminUser = new User
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FirstName = "AdminFirstName",
+                    LastName = "AdminLastName",
+                };
+                // Mot de passe de test => à changer en prod
+                userManager.CreateAsync(adminUser, "adminpassword123").Wait();
+            }
+
+            // 3) On l’ajoute au rôle Admin s’il n’y est pas déjà
+            if (!userManager.IsInRoleAsync(adminUser, "Admin").Result)
+            {
+                userManager.AddToRoleAsync(adminUser, "Admin").Wait();
+            }
+
+            // 4) Création de quelques utilisateurs de test (simulés)
+            string[] sampleUserEmails = { "user1@domain.com", "user2@domain.com", "user3@domain.com" };
+            foreach (var email in sampleUserEmails)
+            {
+                var user = userManager.FindByEmailAsync(email).Result;
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        UserName = email,
+                        Email = email,
+                        FirstName = "UserFirstName",  
+                        LastName = "UserLastName"
+                    };
+                    // Mot de passe commun pour les utilisateurs de test
+                    userManager.CreateAsync(user, "userpassword123").Wait();
+                }
+            }
+
+            context.SaveChanges();
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

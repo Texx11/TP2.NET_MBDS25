@@ -21,16 +21,25 @@ namespace Gauniv.WebServer.Controllers
 
         private readonly ApplicationDbContext _context = applicationDbContext;
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            // Retrieve the list of games from the database
-            List<Game> games = _context.Games
-                .Include(g => g.Categories)
-                .OrderBy(g => g.Id)
-                .ToList();
-            //TODO: Order the list by the id
+            var games = _context.Games.Include(g => g.Categories).OrderBy(g => g.Id).ToList();
+            var viewModel = new IndexViewModel { Games = games };
 
-            return View(new IndexViewModel { Games = games });
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                // Récupère l'utilisateur avec ses jeux possédés
+                var currentUser = await userManager.GetUserAsync(User);
+                var userWithGames = _context.Users
+                    .Where(u => u.Id == currentUser.Id)
+                    .Include(u => u.OwnedGames)
+                    .FirstOrDefault();
+                if (userWithGames != null)
+                {
+                    viewModel.OwnedGameIds = userWithGames.OwnedGames.Select(g => g.Id).ToList();
+                }
+            }
+            return View(viewModel);
         }
 
 

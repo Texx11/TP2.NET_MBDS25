@@ -127,3 +127,17 @@ h1{
     display: flex;
     justify-content: space-between;
 }
+
+.owned-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+    .owned-badge i {
+        margin-right: 5px;
+    }
