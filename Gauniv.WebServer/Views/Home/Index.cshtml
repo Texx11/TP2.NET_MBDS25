@@ -1,34 +1,37 @@
 ﻿@model IndexViewModel
 @using X.PagedList.Mvc.Core;
 @using X.PagedList;
+@inject Microsoft.AspNetCore.Identity.UserManager<Gauniv.WebServer.Data.User> userManager
+
 @{
     ViewData["Title"] = "View";
+    // Détermine si l'utilisateur est connecté et s'il est admin
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true;
+    bool isAdmin = User.IsInRole("Admin");
+    // Récupération de la liste des jeux possédés via le modèle (initialisée dans le contrôleur)
+    var ownedGameIds = Model.OwnedGameIds ?? new List<int>();
 }
+
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
-<link href="~/css/game-display.css" rel="stylesheet" type="text/css"/>
+<link href="~/css/game-display.css" rel="stylesheet" type="text/css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
 <h1>Games List</h1>
 
-
-@if (true)
+@if (isAdmin)
 {
     <div class="header-grid">
         <p class="create-button">
             <a asp-controller="Game" asp-action="CreateGame" class="btn btn-primary style-button">Create New Game</a>
         </p>
-
         <p class="create-button">
             <a asp-controller="Category" asp-action="CreateCategory" class="btn btn-primary style-button">Create New Category</a>
         </p>
-
         <p class="create-button">
             <a asp-controller="Category" asp-action="ListCategory" class="btn btn-primary style-button">Liste des Categories</a>
         </p>
     </div>
 }
-
-
 
 <div class="game-grid">
     @foreach (var game in Model.Games)
@@ -50,22 +53,34 @@
                 @foreach (var category in categories.Select((c, index) => new { c, index }))
                 {
                     <span class="category">@category.c.Name</span>
-
                     @(category.index < categories.Count - 1 ? ", " : "")
                 }
             </div>
-            <div class="game-bottom">
-                <div class="edit-button-container">
-                    <a asp-controller="EditGame" asp-action="EditGame" asp-route-id="@game.Id" class="btn btn-primary style-button">
-                        <i class="fas fa-edit"></i>
-                    </a>
+
+            @* Afficher le bouton Buy uniquement si l'utilisateur est connecté ET ne possède pas déjà le jeu *@
+            @if (isAuthenticated && !ownedGameIds.Contains(game.Id))
+            {
+                <form method="post" asp-action="BuyGame" asp-controller="Game" asp-route-id="@game.Id">
+                    <button type="submit" class="btn btn-success style-button">Buy</button>
+                </form>
+            }
+
+            @* Boutons d'administration (Edit et Delete) visibles uniquement pour les admins *@
+            @if (isAdmin)
+            {
+                <div class="game-bottom">
+                    <div class="edit-button-container">
+                        <a asp-controller="EditGame" asp-action="EditGame" asp-route-id="@game.Id" class="btn btn-primary style-button">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                    <div class="delete-button-container">
+                        <button class="btn btn-danger style-button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="@game.Id">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="delete-button-container">
-                    <button class="btn btn-danger style-button" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="@game.Id">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
+            }
         </div>
     }
 </div>
@@ -92,11 +107,9 @@
 
 <script>
     const deleteButtons = document.querySelectorAll('.delete-button-container button');
-
     deleteButtons.forEach(button => {
         button.addEventListener('click', function () {
             const gameId = this.getAttribute('data-id');
-
             const form = document.getElementById('deleteForm');
             form.action = '@Url.Action("Delete", "Home")/' + gameId;
         });

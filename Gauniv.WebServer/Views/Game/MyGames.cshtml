@@ -1,0 +1,28 @@
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "Mes Jeux";
+}
+<h1>My Games</h1>
+
+<div class="game-grid">
+    @foreach (var game in Model.Games)
+    {
+        <div class="game-card">
+            <div class="game-header">
+                <span class="game-id">#@game.Id</span>
+                <h2 class="game-name">@game.Name</h2>
+            </div>
+            <p class="game-description">@game.Description</p>
+            <div class="price-container">
+                <p>Price : </p> $@game.Price
+            </div>
+            <div class="category-container">
+                @foreach (var c in game.Categories)
+                {
+                    <span class="category">@c.Name</span>
+                }
+            </div>
+            <!-- Bouton ou autre action spécifique (Ex: désinstaller) -->
+        </div>
+    }
+</div>

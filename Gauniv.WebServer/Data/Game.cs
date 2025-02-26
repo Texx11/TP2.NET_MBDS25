@@ -18,5 +18,6 @@ namespace Gauniv.WebServer.Data
 
         // Link to the categories
         public ICollection<Category> Categories { get; set; } = new List<Category>();
+        public ICollection<User> Owners { get; set; } = new List<User>();
     }
 }

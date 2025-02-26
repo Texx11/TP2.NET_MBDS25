@@ -22,6 +22,7 @@ namespace Gauniv.WebServer.Controllers
 
         private readonly ApplicationDbContext _context = applicationDbContext;
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult CreateGame()
         {
@@ -40,7 +41,7 @@ namespace Gauniv.WebServer.Controllers
             return View(model);
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Create(GameViewModel model, IFormFile? payloadFile)
         {
@@ -97,6 +98,69 @@ namespace Gauniv.WebServer.Controllers
                 }).ToList();
 
             return View(model);
+        }
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> MyGames()
+        {
+            // Récupère l'utilisateur connecté
+            var currentUser = await userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return Challenge(); // Redirige vers la page de login si besoin
+
+            // Charge les jeux possédés (en incluant les catégories)
+            var userInDb = _context.Users
+                .Where(u => u.Id == currentUser.Id)
+                .Include(u => u.OwnedGames)
+                    .ThenInclude(g => g.Categories)
+                .FirstOrDefault();
+
+            if (userInDb == null)
+                return NotFound();
+
+            // On renvoie la vue MyGames avec la liste de jeux
+            var viewModel = new IndexViewModel
+            {
+                Games = userInDb.OwnedGames.ToList()
+            };
+            return View("MyGames", viewModel);
+        }
+
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> BuyGame(int id)
+        {
+            // Récupère l'utilisateur connecté
+            var currentUser = await userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return Challenge(); // Redirige vers la page de login
+
+            // Récupère le jeu à acheter
+            var game = _context.Games.FirstOrDefault(g => g.Id == id);
+            if (game == null)
+                return NotFound();
+
+            // Vérifie si l'utilisateur possède déjà ce jeu
+            var userInDb = _context.Users
+                .Where(u => u.Id == currentUser.Id)
+                .Include(u => u.OwnedGames)
+                .FirstOrDefault();
+
+            if (userInDb == null)
+                return NotFound();
+
+            if (!userInDb.OwnedGames.Contains(game))
+            {
+                // Ajout du jeu à la liste OwnedGames
+                userInDb.OwnedGames.Add(game);
+                await _context.SaveChangesAsync();
+            }
+
+            // On redirige vers la liste de jeux possédés
+            return RedirectToAction("MyGames");
         }
     }
 }

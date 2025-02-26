@@ -22,12 +22,14 @@ namespace Gauniv.WebServer.Controllers
 
         private readonly ApplicationDbContext _context = applicationDbContext;
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult CreateCategory()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ListCategory()
         {
@@ -45,6 +47,7 @@ namespace Gauniv.WebServer.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult EditCategory(int id)
         {
@@ -62,6 +65,7 @@ namespace Gauniv.WebServer.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public IActionResult Delete(int id)
         {
@@ -77,6 +81,7 @@ namespace Gauniv.WebServer.Controllers
             return RedirectToAction("ListCategory");
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Create(CategoryViewModel model, IFormFile? payloadFile)
         {
@@ -96,6 +101,7 @@ namespace Gauniv.WebServer.Controllers
             return View(model);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult Edit(CategoryViewModel model)
         {
