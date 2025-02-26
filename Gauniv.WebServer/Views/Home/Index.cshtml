@@ -4,7 +4,7 @@
 @inject Microsoft.AspNetCore.Identity.UserManager<Gauniv.WebServer.Data.User> userManager
 
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Games List";
     // Détermine si l'utilisateur est connecté et s'il est admin
     bool isAuthenticated = User.Identity?.IsAuthenticated == true;
     bool isAdmin = User.IsInRole("Admin");
@@ -14,7 +14,7 @@
 
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 <link href="~/css/game-display.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
 <h1>Games List</h1>
 
@@ -43,7 +43,7 @@
             </div>
             <p class="game-description">@game.Description</p>
             <div class="price-container">
-                <p>Price : </p>
+                <p>Price :</p>
                 $@game.Price
             </div>
             <div class="category-container">
@@ -57,15 +57,23 @@
                 }
             </div>
 
-            @* Afficher le bouton Buy uniquement si l'utilisateur est connecté ET ne possède pas déjà le jeu *@
-            @if (isAuthenticated && !ownedGameIds.Contains(game.Id))
+            @if (isAuthenticated)
             {
-                <form method="post" asp-action="BuyGame" asp-controller="Game" asp-route-id="@game.Id">
-                    <button type="submit" class="btn btn-success style-button">Buy</button>
-                </form>
+                @* Si le jeu est déjà acheté, afficher un badge "Owned" *@
+                @if (ownedGameIds.Contains(game.Id))
+                {
+                    <div class="owned-badge">
+                        <i class="fas fa-check-circle"></i> Owned
+                    </div>
+                }
+                else
+                {
+                    <form method="post" asp-action="BuyGame" asp-controller="Game" asp-route-id="@game.Id">
+                        <button type="submit" class="btn btn-success style-button">Buy</button>
+                    </form>
+                }
             }
 
-            @* Boutons d'administration (Edit et Delete) visibles uniquement pour les admins *@
             @if (isAdmin)
             {
                 <div class="game-bottom">
