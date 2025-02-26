@@ -24,7 +24,8 @@ namespace Gauniv.WebServer.Controllers
         public IActionResult Index()
         {
             // Retrieve the list of games from the database
-            List<Game> games = _context.Games.ToList();
+            List<Game> games = _context.Games.OrderBy(g => g.Id).ToList();
+            //TODO: Order the list by the id
 
             return View(new IndexViewModel { Games = games });
         }
@@ -34,6 +35,24 @@ namespace Gauniv.WebServer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            // Trouver le jeu à supprimer
+            var game = _context.Games.Find(id);
+            if (game == null)
+            {
+                return NotFound(); // Si le jeu n'existe pas
+            }
+
+            // Supprimer le jeu de la base de données
+            _context.Games.Remove(game);
+            _context.SaveChanges();
+
+            // Rediriger vers l'index après la suppression
+            return RedirectToAction("Index");
         }
     }
 }

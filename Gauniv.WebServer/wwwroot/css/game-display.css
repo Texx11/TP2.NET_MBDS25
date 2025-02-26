@@ -19,22 +19,31 @@ h1{
     margin-bottom: 20px;
     color: #333;
 }
-
-.create-game-button {
-    text-align: center;
-    font-size: 1rem;
+.header-grid{
+    display: flex;
+    gap: 20px;
     width: 100%;
+    justify-content: center;
+    margin: 0;
 }
-    .create-game-button a {
-        font-weight: bold;
-        padding: 5px 20px;
+
+.style-button {
+    font-weight: bold;
+    padding: 5px 25px;
+    background-color: #137EAF;
+    border: none;
+}
+
+    .style-button:hover {
+        transform: scale(1.05);
         background-color: #137EAF;
-        border-color: #1B2838;
     }
-        .create-game-button a:hover {
-            transform: scale(1.05);
-            background-color: #137EAF;
-        }
+
+.create-button {
+    font-size: 1rem;
+    width: auto;
+}
+
 /* Grille des jeux */
 .game-grid {
     display: grid;
@@ -96,11 +105,21 @@ h1{
 
 /* Conteneur du prix pour le coller en bas */
 .price-container {
-    background-color: #137EAF;
-    color: white;
+    display: flex;
+    justify-content: space-around;
+    color: #333;
     padding: 10px;
     font-size: 1.1rem;
     font-weight: bold;
     text-align: center;
     border-radius: 10px;
+}
+.price-container p {
+    font-size: 1rem;
+    font-weight: normal;
+}
+.game-bottom {
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
 }
