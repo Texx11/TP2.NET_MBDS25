@@ -1,0 +1,38 @@
+﻿@model IPagedList<Gauniv.WebServer.Models.Category>
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@{
+    ViewData["Title"] = "View";
+}
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+<link href="~/css/new-category.css" rel="stylesheet" type="text/css" />
+
+<h2>Listes des Catégories</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.Id</td>
+                <td>@category.Name</td>
+                <td>
+                    <!-- Boutons d'édition et de suppression -->
+                    <a asp-controller="Category" asp-action="EditCategory" asp-route-id="@category.Id" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="@category.Id">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

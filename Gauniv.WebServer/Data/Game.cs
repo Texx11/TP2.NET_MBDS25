@@ -16,6 +16,7 @@ namespace Gauniv.WebServer.Data
         public byte[]? Payload { get; set; }
         public float Price { get; set; }
 
-        //TODO : Add categories fields
+        // Link to the categories
+        public ICollection<Category> Categories { get; set; } = new List<Category>();
     }
 }

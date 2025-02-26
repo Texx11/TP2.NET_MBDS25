@@ -5,7 +5,7 @@
     color: #333;
 }
 
-.edit-form {
+.category-form {
     max-width: 600px;
     margin: auto;
     padding: 20px;
@@ -44,36 +44,3 @@
         align-items: center;
         gap: 5px;
     }
-
-.category-list {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-.category-label {
-    border-top: 1px solid #ccc;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    width: 100%;
-}
-    .category-label label {
-        font-weight: bold;
-        margin: 5px 10px;
-    }
-
-.form-check {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    margin-bottom: 10px;
-}
-
-.form-check-label {
-    font-weight: normal;
-    margin-left: 10px;
-    font-size: 14px;
-}

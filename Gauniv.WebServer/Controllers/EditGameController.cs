@@ -7,57 +7,83 @@ using Gauniv.WebServer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using X.PagedList.Extensions;
 
 namespace Gauniv.WebServer.Controllers
 {
-    public class EditGameController(ILogger<GameController> logger, ApplicationDbContext applicationDbContext, UserManager<User> userManager) : Controller
+    public class EditGameController : Controller
     {
-        private readonly ILogger<GameController> _logger = logger;
-        private readonly ApplicationDbContext applicationDbContext = applicationDbContext;
-        private readonly UserManager<User> userManager = userManager;
+        private readonly ILogger<GameController> _logger;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        private readonly ApplicationDbContext _context = applicationDbContext;
+        public EditGameController(ILogger<GameController> logger, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
+        {
+            _logger = logger;
+            _context = applicationDbContext;
+            _userManager = userManager;
+        }
 
+        // Action GET pour afficher le formulaire d'édition du jeu
         [HttpGet]
         public IActionResult EditGame(int id)
         {
-            var game = _context.Games.Find(id);
+            var game = _context.Games.Include(g => g.Categories).FirstOrDefault(g => g.Id == id);
             if (game == null)
             {
                 return NotFound();
             }
 
+            // Préparer le modèle de données pour le formulaire
             var model = new EditViewModel
             {
                 Id = game.Id,
                 Name = game.Name,
                 Description = game.Description,
                 Price = game.Price,
+                // Charger toutes les catégories disponibles
+                AvailableCategories = _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Name
+                    }).ToList(),
+                SelectedCategoryIds = game.Categories.Select(c => c.Id).ToList()
             };
 
             return View(model);
         }
 
+        // Action POST pour enregistrer les modifications après soumission du formulaire
         [HttpPost]
         public IActionResult Edit(EditViewModel model, IFormFile? payloadFile)
         {
             if (ModelState.IsValid)
             {
                 // Récupérer le jeu existant dans la base de données
-                var game = _context.Games.Find(model.Id);
+                var game = _context.Games.Include(g => g.Categories).FirstOrDefault(g => g.Id == model.Id);
                 if (game == null)
                 {
                     return NotFound(); // Gérer le cas où le jeu n'existe pas
                 }
-                // Mettre à jour les champs
+
                 game.Name = model.Name;
                 game.Description = model.Description;
                 game.Price = model.Price;
 
-                // Gestion du fichier s'il est mis à jour
+                game.Categories.Clear();
+                foreach (var categoryId in model.SelectedCategoryIds)
+                {
+                    var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+                    if (category != null)
+                    {
+                        game.Categories.Add(category);
+                    }
+                }
+
                 if (payloadFile != null)
                 {
                     using (var memoryStream = new MemoryStream())
@@ -66,14 +92,21 @@ namespace Gauniv.WebServer.Controllers
                         game.Payload = memoryStream.ToArray();
                     }
                 }
-                // Sauvegarder les changements
+
                 _context.SaveChanges();
 
-                // Rediriger vers l'index
                 return RedirectToAction("Index", "Home");
             }
+
+            model.AvailableCategories = _context.Categories
+                                                .Select(c => new SelectListItem
+                                                {
+                                                    Value = c.Id.ToString(),
+                                                    Text = c.Name
+                                                }).ToList();
 
             return View(model);
         }
     }
+
 }

@@ -1,4 +1,5 @@
 ﻿using Gauniv.WebServer.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.InteropServices;
 
@@ -18,9 +19,10 @@ namespace Gauniv.WebServer.Models
 
         public string? Description { get; set; }
         public float Price { get; set; }
-        //public IFormFile? Content { get; set; }
-        public String[]? Categories { get; set; }
         public byte[]? Payload { get; set; }
+        public List<SelectListItem> AvailableCategories { get; set; } = new List<SelectListItem>();
+        public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+
     }
 
     /**
@@ -42,5 +44,9 @@ namespace Gauniv.WebServer.Models
         public float Price { get; set; }
         public String[]? Categories { get; set; }
         public byte[]? Payload { get; set; }
+    }
+    public class CreateCategoryViewModel()
+    {
+        public String? Name { get; set; }
     }
 }
