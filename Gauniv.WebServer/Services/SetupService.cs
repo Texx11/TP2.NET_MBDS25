@@ -55,6 +55,25 @@ namespace Gauniv.WebServer.Services
                 userManager.AddToRoleAsync(adminUser, "Admin").Wait();
             }
 
+            // 4) Création de quelques utilisateurs de test (simulés)
+            string[] sampleUserEmails = { "user1@domain.com", "user2@domain.com", "user3@domain.com" };
+            foreach (var email in sampleUserEmails)
+            {
+                var user = userManager.FindByEmailAsync(email).Result;
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        UserName = email,
+                        Email = email,
+                        FirstName = "UserFirstName",  
+                        LastName = "UserLastName"
+                    };
+                    // Mot de passe commun pour les utilisateurs de test
+                    userManager.CreateAsync(user, "userpassword123").Wait();
+                }
+            }
+
             context.SaveChanges();
 
             return Task.CompletedTask;
