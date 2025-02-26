@@ -1,15 +1,15 @@
 ﻿@model CategoryViewModel
-@using X.PagedList.Mvc.Core;
-@using X.PagedList;
+
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Edit Category";
 }
-<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
-<link href="~/css/new-category.css" rel="stylesheet" type="text/css" />
+<link href="~/css/edit-game.css" rel="stylesheet" type="text/css" />
 
-<h2>Create a New Category</h2>
+<h1 class="page-title">Edit Category</h1>
 
-<form asp-action="Create" method="post" enctype="multipart/form-data" class="category-form">
+<form asp-action="Edit" method="post" enctype="multipart/form-data" class="edit-form">
+    <input type="hidden" asp-for="Id" /> <!-- ID caché pour l'édition -->
+
     <div class="form-group">
         <label asp-for="Name">Game Name</label>
         <input asp-for="Name" class="form-control" required />
@@ -17,7 +17,7 @@
 
     <div class="button-group">
         <button type="submit" class="btn btn-success">
-            <i class="fas fa-save"></i> Create Category
+            <i class="fas fa-save"></i> Save
         </button>
         <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back

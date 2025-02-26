@@ -38,7 +38,7 @@ namespace Gauniv.WebServer.Controllers
             }
 
             // Préparer le modèle de données pour le formulaire
-            var model = new EditViewModel
+            var model = new GameViewModel
             {
                 Id = game.Id,
                 Name = game.Name,
@@ -59,7 +59,7 @@ namespace Gauniv.WebServer.Controllers
 
         // Action POST pour enregistrer les modifications après soumission du formulaire
         [HttpPost]
-        public IActionResult Edit(EditViewModel model, IFormFile? payloadFile)
+        public IActionResult Edit(GameViewModel model, IFormFile? payloadFile)
         {
             if (ModelState.IsValid)
             {
@@ -75,12 +75,15 @@ namespace Gauniv.WebServer.Controllers
                 game.Price = model.Price;
 
                 game.Categories.Clear();
-                foreach (var categoryId in model.SelectedCategoryIds)
+                if (model.Categories != null)
                 {
-                    var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
-                    if (category != null)
+                    foreach (var categoryId in model.SelectedCategoryIds)
                     {
-                        game.Categories.Add(category);
+                        var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+                        if (category != null)
+                        {
+                            game.Categories.Add(category);
+                        }
                     }
                 }
 

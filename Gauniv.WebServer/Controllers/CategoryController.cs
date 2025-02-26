@@ -31,12 +31,46 @@ namespace Gauniv.WebServer.Controllers
         public IActionResult ListCategory()
         {
             List<Category> categories = _context.Categories.OrderBy(g => g.Id).ToList();
+            var model = new CategoryViewModel
+            {
+                Categories = categories
+            };
+            return View(model);
+        }
 
-            return View(categories);
+        [HttpGet]
+        public IActionResult EditCategory(int id)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Id == id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+            var model = new CategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.Name,
+            };
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult Create(CreateCategoryViewModel model, IFormFile? payloadFile)
+        public IActionResult DeleteCategory(int id)
+        {
+            var category = _context.Categories.Find(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            _context.Categories.Remove(category);
+            _context.SaveChanges();
+
+            return RedirectToAction("ListCategory");
+        }
+
+        [HttpPost]
+        public IActionResult Create(CategoryViewModel model, IFormFile? payloadFile)
         {
             if (ModelState.IsValid)
             {
@@ -52,6 +86,22 @@ namespace Gauniv.WebServer.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(CategoryViewModel model)
+        {
+            //Edit category name
+            var category = _context.Categories.FirstOrDefault(c => c.Id == model.Id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+            category.Name = model.Name;
+
+            _context.SaveChanges();
+            
+            return RedirectToAction("ListCategory");
         }
     }
 }

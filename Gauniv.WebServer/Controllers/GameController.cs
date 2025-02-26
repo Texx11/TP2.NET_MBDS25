@@ -7,6 +7,7 @@ using Gauniv.WebServer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Packaging;
 using X.PagedList.Extensions;
@@ -24,12 +25,22 @@ namespace Gauniv.WebServer.Controllers
         [HttpGet]
         public IActionResult CreateGame()
         {
-            return View();
+            var model = new GameViewModel
+            {
+                AvailableCategories = _context.Categories
+                        .Select(c => new SelectListItem
+                        {
+                            Value = c.Id.ToString(),
+                            Text = c.Name
+                        }).ToList()
+            };
+
+            return View(model);
         }
 
 
         [HttpPost]
-        public IActionResult Create(CreateGameViewModel model, IFormFile? payloadFile)
+        public IActionResult Create(GameViewModel model, IFormFile? payloadFile)
         {
             if (ModelState.IsValid)
             {
@@ -43,20 +54,45 @@ namespace Gauniv.WebServer.Controllers
                     }
                 }
 
-                Game game = new Game
+                // Create the new game object
+                var game = new Game
                 {
                     Name = model.Name,
                     Description = model.Description,
                     Price = model.Price,
-                    //Categories = model.Categories != null ? string.Join(",", model.Categories) : null,
                     Payload = fileBytes
                 };
 
+                // Initialize the list of categories for the new game
+                game.Categories = new List<Category>();
+
+                // Add selected categories to the game
+                if (model.Categories != null)
+                {
+                    foreach (var categoryId in model.SelectedCategoryIds)
+                    {
+                        var category = _context.Categories.FirstOrDefault(c => c.Id == categoryId);
+                        if (category != null)
+                        {
+                            game.Categories.Add(category);
+                        }
+                    }
+                }
+
+                // Save the new game to the database
                 _context.Games.Add(game);
                 _context.SaveChanges();
 
                 return RedirectToAction("Index", "Home");
             }
+
+            // If the model state is invalid, re-populate the AvailableCategories list and return the view with the model
+            model.AvailableCategories = _context.Categories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToList();
 
             return View(model);
         }

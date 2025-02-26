@@ -12,7 +12,7 @@ namespace Gauniv.WebServer.Models
         public IFormFile Content { get; set; }
         public int[] Categories { get; set; }
     }
-    public class EditViewModel()
+    public class GameViewModel()
     {
         public int Id { get; set; }
         public string? Name { get; set; }
@@ -20,6 +20,8 @@ namespace Gauniv.WebServer.Models
         public string? Description { get; set; }
         public float Price { get; set; }
         public byte[]? Payload { get; set; }
+
+        public List<Category> Categories { get; set; } = new List<Category>();
         public List<SelectListItem> AvailableCategories { get; set; } = new List<SelectListItem>();
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
 
@@ -45,8 +47,15 @@ namespace Gauniv.WebServer.Models
         public String[]? Categories { get; set; }
         public byte[]? Payload { get; set; }
     }
-    public class CreateCategoryViewModel()
+
+    /**
+     * View Model pour afficher des categories
+     */
+    public class CategoryViewModel()
     {
+        public int Id { get; set; }
         public String? Name { get; set; }
+
+        public List<Category>? Categories { get; set; }
     }
 }
