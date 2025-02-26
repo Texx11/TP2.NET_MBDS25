@@ -10,6 +10,9 @@ namespace Gauniv.WebServer.Dtos
             // Rajouter autant de ligne ici que vous avez de mapping Model <-> DTO
             // https://docs.automapper.org/en/latest/
             CreateMap<Game, GameDto>();
+            CreateMap<GameDto, Game>();
+            CreateMap<Category, CategoryDto>();
+            CreateMap<CategoryDto, Category>();
         }
     }
 }

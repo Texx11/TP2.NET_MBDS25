@@ -100,7 +100,7 @@ h1{
     font-size: 1rem;
     color: #555;
     flex-grow: 1; /* Permet d'étirer la description et repousser le prix en bas */
-    margin-bottom: 10px;
+    margin-bottom: 0;
 }
 
 /* Conteneur du prix pour le coller en bas */
@@ -108,7 +108,7 @@ h1{
     display: flex;
     justify-content: space-around;
     color: #333;
-    padding: 10px;
+    padding: 5px 10px;
     font-size: 1.1rem;
     font-weight: bold;
     text-align: center;
@@ -117,6 +117,10 @@ h1{
 .price-container p {
     font-size: 1rem;
     font-weight: normal;
+}
+.category-container {
+    font-size: .7rem;
+    color: #333;
 }
 .game-bottom {
     margin: 10px 0;
