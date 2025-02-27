@@ -66,5 +66,12 @@ namespace Gauniv.WebServer.Controllers
             // Rediriger vers l'index après la suppression
             return RedirectToAction("Index");
         }
+
+        [Authorize] 
+        [HttpGet]
+        public IActionResult OnlineUsers()
+        {
+            return View();
+        }
     }
 }
