@@ -34,6 +34,13 @@ namespace Gauniv.WebServer.Models
     {
         public required List<Game> Games { get; set; }
         public List<int> OwnedGameIds { get; set; } = new();
+        public string? SearchName { get; set; }
+        public float? MinPrice { get; set; }
+        public float? MaxPrice { get; set; }
+        public List<int> SelectedCategories { get; set; } = new();
+        public bool? Possessed { get; set; }
+        public int? MinSize { get; set; }
+        public int? MaxSize { get; set; }
     }
 
     /**

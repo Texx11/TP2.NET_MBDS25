@@ -21,24 +21,113 @@ namespace Gauniv.WebServer.Controllers
 
         private readonly ApplicationDbContext _context = applicationDbContext;
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+    [FromQuery] string? searchName,      // nom du jeu
+    [FromQuery] float? minPrice,
+    [FromQuery] float? maxPrice,
+    [FromQuery] List<int>? selectedCategories,
+    [FromQuery] bool? possessed,
+    [FromQuery] int? minSize,
+    [FromQuery] int? maxSize
+)
         {
-            var games = _context.Games.Include(g => g.Categories).OrderBy(g => g.Id).ToList();
-            var viewModel = new IndexViewModel { Games = games };
+            // 1) Construire la requête de base
+            var gamesQuery = _context.Games
+                .Include(g => g.Categories)
+                .OrderBy(g => g.Id)
+                .AsQueryable();
 
+            // 2) Appliquer les filtres
+            if (!string.IsNullOrWhiteSpace(searchName))
+            {
+                gamesQuery = gamesQuery.Where(g => g.Name != null && g.Name.Contains(searchName));
+            }
+
+            if (minPrice.HasValue)
+            {
+                gamesQuery = gamesQuery.Where(g => g.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                gamesQuery = gamesQuery.Where(g => g.Price <= maxPrice.Value);
+            }
+
+            if (selectedCategories != null && selectedCategories.Count > 0)
+            {
+                // Jeux possédant *au moins* une des catégories filtrées
+                gamesQuery = gamesQuery.Where(g => g.Categories.Any(c => selectedCategories.Contains(c.Id)));
+            }
+
+            // Filtrer par possédé / non possédé
+            // (besoin de l'utilisateur connecté et de son "OwnedGames")
+            List<int> ownedIds = new();
             if (User.Identity?.IsAuthenticated == true)
             {
-                // Récupère l'utilisateur avec ses jeux possédés
                 var currentUser = await userManager.GetUserAsync(User);
-                var userWithGames = _context.Users
-                    .Where(u => u.Id == currentUser.Id)
-                    .Include(u => u.OwnedGames)
-                    .FirstOrDefault();
-                if (userWithGames != null)
+                if (currentUser != null)
                 {
-                    viewModel.OwnedGameIds = userWithGames.OwnedGames.Select(g => g.Id).ToList();
+                    // Charger la liste des jeux achetés
+                    var userInDb = _context.Users
+                        .Where(u => u.Id == currentUser.Id)
+                        .Include(u => u.OwnedGames)
+                        .FirstOrDefault();
+
+                    if (userInDb != null)
+                    {
+                        ownedIds = userInDb.OwnedGames.Select(g => g.Id).ToList();
+
+                        if (possessed.HasValue)
+                        {
+                            if (possessed.Value)
+                            {
+                                // On veut seulement les jeux possédés
+                                gamesQuery = gamesQuery.Where(g => ownedIds.Contains(g.Id));
+                            }
+                            else
+                            {
+                                // On veut seulement les jeux NON possédés
+                                gamesQuery = gamesQuery.Where(g => !ownedIds.Contains(g.Id));
+                            }
+                        }
+                    }
                 }
             }
+            else
+            {
+                if (possessed == true)
+                {
+                    gamesQuery = gamesQuery.Where(g => false); // Personne n'est connecté, donc aucun jeu possédé
+                }
+            }
+
+            // Filtre par taille du payload en Mo
+            if (minSize.HasValue)
+            {
+                gamesQuery = gamesQuery.Where(g => g.Payload != null && (g.Payload.Length / (1024.0 * 1024.0)) >= minSize.Value);
+            }
+            if (maxSize.HasValue)
+            {
+                gamesQuery = gamesQuery.Where(g => g.Payload != null && (g.Payload.Length / (1024.0 * 1024.0)) <= maxSize.Value);
+            }
+
+            // 3) Exécuter la requête
+            var games = gamesQuery.ToList();
+
+            // 4) Préparer le modèle pour la vue
+            var viewModel = new IndexViewModel
+            {
+                Games = games,
+                OwnedGameIds = ownedIds,
+                SearchName = searchName,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                SelectedCategories = selectedCategories ?? new List<int>(),
+                Possessed = possessed,
+                MinSize = minSize,
+                MaxSize = maxSize
+            };
+
             return View(viewModel);
         }
 

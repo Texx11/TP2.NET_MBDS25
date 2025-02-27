@@ -98,7 +98,7 @@ namespace Gauniv.WebServer.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            return View(model);
+            return View("CreateCategory", model);
         }
 
         [Authorize(Roles = "Admin")]
