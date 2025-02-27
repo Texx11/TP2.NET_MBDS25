@@ -46,7 +46,7 @@ namespace Gauniv.WebServer.Services
                     LastName = "AdminLastName",
                 };
                 // Mot de passe de test => à changer en prod
-                userManager.CreateAsync(adminUser, "adminpassword123").Wait();
+                userManager.CreateAsync(adminUser, "admin").Wait();
             }
 
             // 3) On l’ajoute au rôle Admin s’il n’y est pas déjà
@@ -70,7 +70,7 @@ namespace Gauniv.WebServer.Services
                         LastName = "UserLastName"
                     };
                     // Mot de passe commun pour les utilisateurs de test
-                    userManager.CreateAsync(user, "userpassword123").Wait();
+                    userManager.CreateAsync(user, "user").Wait();
                 }
             }
 
