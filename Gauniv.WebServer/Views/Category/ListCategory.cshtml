@@ -3,6 +3,7 @@
 @using X.PagedList;
 @{
     ViewData["Title"] = "ListCategory";
+    bool isAdmin = User.IsInRole("Admin");
 }
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 <link href="~/css/new-category.css" rel="stylesheet" type="text/css" />
@@ -10,30 +11,27 @@
 
 <h1>Listes des Catégories</h1>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var category in Model.Categories)
-        {
-            <tr>
-                <td>@category.Id</td>
-                <td>@category.Name</td>
-                <td>
-                    <!-- Boutons d'édition et de suppression -->
+<div class="category-grid">
+    @foreach (var category in Model.Categories)
+    {
+        <div class="category-card">
+            <div class="card-header">
+                <h2 class="category-name">@category.Name</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>ID :</strong> @category.Id</p>
+            </div>
+            @if (isAdmin)
+            {
+                <div class="card-footer">
                     <a asp-controller="Category" asp-action="EditCategory" asp-route-id="@category.Id" class="btn btn-primary style-button">
                         <i class="fas fa-edit"></i> Edit
                     </a>
                     <a asp-controller="Category" asp-action="Delete" asp-route-id="@category.Id" class="btn btn-danger style-button">
                         <i class="fas fa-trash"></i>
                     </a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                </div>
+            }
+        </div>
+    }
+</div>

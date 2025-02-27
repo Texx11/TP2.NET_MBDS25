@@ -18,20 +18,22 @@
 
 <h1>Games List</h1>
 
-@if (isAdmin)
-{
+
     <div class="header-grid">
-        <p class="create-button">
-            <a asp-controller="Game" asp-action="CreateGame" class="btn btn-primary style-button">Create New Game</a>
-        </p>
-        <p class="create-button">
-            <a asp-controller="Category" asp-action="CreateCategory" class="btn btn-primary style-button">Create New Category</a>
-        </p>
+        @if (isAdmin)
+        { 
+            <p class="create-button">
+                <a asp-controller="Game" asp-action="CreateGame" class="btn btn-primary style-button">Create New Game</a>
+            </p>
+            <p class="create-button">
+                <a asp-controller="Category" asp-action="CreateCategory" class="btn btn-primary style-button">Create New Category</a>
+            </p>
+        }
         <p class="create-button">
             <a asp-controller="Category" asp-action="ListCategory" class="btn btn-primary style-button">Liste des Categories</a>
         </p>
     </div>
-}
+
 
 <div class="game-grid">
     @foreach (var game in Model.Games)
