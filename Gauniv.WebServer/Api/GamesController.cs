@@ -10,15 +10,130 @@ using CommunityToolkit.HighPerformance;
 using Microsoft.AspNetCore.Authorization;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gauniv.WebServer.Api
+
+    /**
+     * Microsoft.Hosting.Lifetime: Information: Now listening on: https://localhost:7209
+     * Microsoft.Hosting.Lifetime: Information: Now listening on: http://localhost:5231
+     */
 {
-    [Route("api/1.0.0/[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
-    public class GamesController(ApplicationDbContext appDbContext, IMapper mapper, UserManager<User> userManager) : ControllerBase
+    public class GamesController : ControllerBase
     {
-        private readonly ApplicationDbContext appDbContext = appDbContext;
-        private readonly IMapper mapper = mapper;
-        private readonly UserManager<User> userManager = userManager;
+        private readonly ApplicationDbContext appDbContext;
+        private readonly IMapper mapper;
+        private readonly UserManager<User> userManager;
+
+        public GamesController(ApplicationDbContext appDbContext, IMapper mapper, UserManager<User> userManager)
+        {
+            this.appDbContext = appDbContext;
+            this.mapper = mapper;
+            this.userManager = userManager;
+        }
+
+        /**
+         * Liste des jeux disponibles pour tout le monde
+         * --------------------------------------------
+         * Test : http://localhost:5231/game
+         */
+        [HttpGet("/game")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetGames(
+            [FromQuery] int offset = 0,
+            [FromQuery] int limit = 10,
+            [FromQuery] string? category = null)
+        {
+            if (limit <= 0 || limit > 50)
+            {
+                return BadRequest("Limit must be between 1 and 50.");
+            }
+
+            var query = appDbContext.Games.Include(g => g.Categories).AsQueryable();
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                var categoryIds = category.Split(',')
+                                            .Select(int.Parse)
+                                            .ToList();         
+
+                query = query.Where(g => g.Categories.Any(c => categoryIds.Contains(c.Id)));
+            }
+
+            var games = await query
+                        .Skip(offset)
+                        .Take(limit)
+                        .Select(g => new GameDto
+                        {
+                            Id = g.Id,
+                            Name = g.Name,
+                            Description = g.Description,
+                            Price = g.Price,
+                            Categories = g.Categories.Select(c => c.Name!).ToList()
+                        })
+                        .ToListAsync();
+
+            return Ok(games);
+        }
+
+        /**
+         * Liste des jeux disponibles pour tout le monde
+         * --------------------------------------------
+         * Test : http://localhost:5231/game/mygames
+         */
+
+        [HttpGet("/game/mygames")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetUserGames(
+            [FromQuery] int offset = 0,
+            [FromQuery] int limit = 10,
+            [FromQuery] List<int>? category = null)
+        {
+            if (offset < 0)
+            {
+                return BadRequest("Offset must be non-negative.");
+            }
+
+            if (limit <= 0 || limit > 50)
+            {
+                return BadRequest("Limit must be between 1 and 50.");
+            }
+
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var query = appDbContext.Games
+                .Where(g => g.Owners.Contains(user))
+                .Include(g => g.Categories)
+                .AsNoTracking();
+
+            if (category != null && category.Any())
+            {
+                query = query.Where(g => g.Categories.Any(c => category.Contains(c.Id)));
+            }
+
+            var userGames = await query
+                .Skip(offset)
+                .Take(limit)
+                .Select(g => new GameDto
+                {
+                    Id = g.Id,
+                    Name = g.Name,
+                    Description = g.Description,
+                    Price = g.Price,
+                    Categories = g.Categories.Select(c => c.Name!).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(userGames);
+        }
     }
 }

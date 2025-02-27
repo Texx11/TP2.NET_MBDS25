@@ -9,6 +9,6 @@ namespace Gauniv.WebServer.Dtos
     {
         public int Id { get; set; }
         public String? Name { get; set; }
-        public ICollection<GameDto> Games { get; set; } = new List<GameDto>();
+        public List<String> Games { get; set; } = new List<String>();
     }
 }

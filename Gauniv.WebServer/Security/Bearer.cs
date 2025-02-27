@@ -23,23 +23,23 @@ internal sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvi
             };
 
             var securityRequirement = new OpenApiSecurityRequirement
-    {
-    {
-        new OpenApiSecurityScheme
-        {
-            Reference = new OpenApiReference
             {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            }
-        },
-        new string[] {}
-    }
-};
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] {}
+                }
+            };
 
-    document.Components ??= new OpenApiComponents();
-    document.Components.SecuritySchemes = requirements;
-    document.SecurityRequirements.Add(securityRequirement);
-}
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes = requirements;
+        document.SecurityRequirements.Add(securityRequirement);
+        }
     }
 }
