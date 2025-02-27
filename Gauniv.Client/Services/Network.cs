@@ -35,6 +35,11 @@ namespace Gauniv.Client.Services
             return await _apiClient.GameAsync(0, 10, null);
         }
 
+        public async Task<ICollection<CategoryDto>> GetCategoryList()
+        {
+            return await _apiClient.CategoryAsync(0, 10);
+        }
+
         public event Action OnConnected;
 
     }

@@ -42,7 +42,7 @@ namespace Gauniv.WebServer.Api
         [HttpGet("/category")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetCategories(
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10)
         {
@@ -69,7 +69,7 @@ namespace Gauniv.WebServer.Api
                 })
                 .ToListAsync();
 
-            return Ok(categories);
+            return categories;
         }
     }
 }
