@@ -47,6 +47,11 @@ namespace Gauniv.WebServer.Api
             [FromQuery] int limit = 10,
             [FromQuery] string? category = null)
         {
+            if (offset < 0)
+            {
+                return BadRequest("Offset must be non-negative.");
+            }
+
             if (limit <= 0 || limit > 50)
             {
                 return BadRequest("Limit must be between 1 and 50.");
@@ -92,7 +97,7 @@ namespace Gauniv.WebServer.Api
         public async Task<IActionResult> GetUserGames(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10,
-            [FromQuery] List<int>? category = null)
+            [FromQuery] string? category = null)
         {
             if (offset < 0)
             {
@@ -115,9 +120,13 @@ namespace Gauniv.WebServer.Api
                 .Include(g => g.Categories)
                 .AsNoTracking();
 
-            if (category != null && category.Any())
+            if (!string.IsNullOrEmpty(category))
             {
-                query = query.Where(g => g.Categories.Any(c => category.Contains(c.Id)));
+                var categoryIds = category.Split(',')
+                                            .Select(int.Parse)
+                                            .ToList();
+
+                query = query.Where(g => g.Categories.Any(c => categoryIds.Contains(c.Id)));
             }
 
             var userGames = await query
