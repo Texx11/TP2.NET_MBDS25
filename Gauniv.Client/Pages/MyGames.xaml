@@ -6,10 +6,53 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Class="Gauniv.Client.Pages.MyGames"
              Title="MyGames"
-             x:DataType="vm:MyGamesViewModel"
-             BindingContext="{vm:MyGamesViewModel}">
-    <Label Text="Liste de mes jeux" />
+             x:DataType="vm:MyGamesViewModel">
     
-    
-    
+    <ContentPage.BindingContext>
+        <vm:MyGamesViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <StackLayout>
+            <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
+            <Label Text="Liste des jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0"/>
+            <CollectionView ItemsSource="{Binding UserGamesDto}" Margin="20">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"  Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border StrokeThickness="2" Padding="20,0,20,20" BackgroundColor="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width=".05*"/>
+                                    <ColumnDefinition Width=".6*" />
+                                    <ColumnDefinition Width=".05*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Padding="0,5">
+                                    <Label Text="{Binding Id, StringFormat='{0}#'}" FontSize="Small" HorizontalOptions="Center" TextColor="LightGray"/>
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Padding="0,5">
+                                    <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" TextColor="Black"/>
+                                </VerticalStackLayout>
+                                <!-- Ligne pour la séparation entre le nom et le reste -->
+                                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                                    <BoxView BackgroundColor="LightGray" HeightRequest="1" HorizontalOptions="Fill"/>
+                                </Grid>
+                                <VerticalStackLayout Grid.Row="2" Grid.Column="1" HorizontalOptions="Center" Margin="0,10,0,10">
+                                    <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ScrollView>
+
 </ContentPage>
