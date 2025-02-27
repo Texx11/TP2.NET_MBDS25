@@ -4,18 +4,22 @@
     // Création de la connexion au Hub "OnlineHub"
     const connection = new signalR.HubConnectionBuilder().withUrl("/online").build();
 
-    // Lorsque le Hub envoie l'événement "UpdateUserStatus", mettre à jour l'élément HTML
+    // Lorsque le Hub envoie l'événement "UpdateUserStatus", mettre à jour le conteneur
     connection.on("UpdateUserStatus", function (users) {
         const container = document.getElementById("onlineUsersList");
         if (!container) return;
         container.innerHTML = "";
         if (users && users.length > 0) {
-            let list = "<ul>";
+            // Pour chaque utilisateur, créer une carte
             users.forEach(user => {
-                list += `<li>${user.userName} (Connecté à ${new Date(user.connectedAt).toLocaleTimeString()})</li>`;
+                const card = document.createElement("div");
+                card.className = "user-card";
+                card.innerHTML = `
+                    <h3>${user.userName}</h3>
+                    <p>Connecté à ${new Date(user.connectedAt).toLocaleTimeString()}</p>
+                `;
+                container.appendChild(card);
             });
-            list += "</ul>";
-            container.innerHTML = list;
         } else {
             container.innerHTML = "<p>Aucun utilisateur en ligne</p>";
         }
