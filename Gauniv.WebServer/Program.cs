@@ -4,6 +4,7 @@ using Gauniv.WebServer.Security;
 using Gauniv.WebServer.Services;
 using Gauniv.WebServer.Websocket;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
+//JWT bearer using
 
 
 // Set the culture so that the culture is the same between front and back
@@ -42,7 +44,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<User>(options => {
+builder.Services.AddIdentityApiEndpoints<User>(options => {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = false;
     options.Password.RequiredLength = 1;
@@ -63,6 +65,10 @@ builder.Services.AddHostedService<OnlineService>();
 builder.Services.AddHostedService<SetupService>();
 // var redis = new  RedisService(redisConnectionString);
 // builder.Services.AddSingleton(redis);
+
+//Login API BEARER
+// Add services to the container.
+
 
 var app = builder.Build();
 
