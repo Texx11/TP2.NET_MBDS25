@@ -42,7 +42,7 @@ namespace Gauniv.WebServer.Api
         [HttpGet("/game")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetGames(
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10,
             [FromQuery] string? category = null)
@@ -81,7 +81,7 @@ namespace Gauniv.WebServer.Api
                         })
                         .ToListAsync();
 
-            return Ok(games);
+            return games;
         }
 
         /**

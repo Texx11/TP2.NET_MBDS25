@@ -11,35 +11,16 @@
        Title="Gauniv.Client"
        BindingContext="{vm:MenuViewModel}"
        x:DataType="vm:MenuViewModel">
-
-    <!--<MenuItem Text="Help"
+    <!-- Définir les pages principales de l'application -->
+    <TabBar>
+        <ShellContent Title="Magasin" ContentTemplate="{DataTemplate local:Index}" />
+        <ShellContent Title="Bibliothèque" ContentTemplate="{DataTemplate local:MyGames}" />
+        <ShellContent Title="Profil" ContentTemplate="{DataTemplate local:Profile}" />
+    </TabBar>
+    
+    
+    <MenuItem Text="Help"
               IconImageSource="help.png"
-              Command="{Binding GoToProfileCommand}"/>-->
-    <FlyoutItem Title="Games"
-                Route="games">
-        <ShellContent ContentTemplate="{DataTemplate local:Index}" />
-    </FlyoutItem>
+              Command="{Binding GoToProfileCommand}"/>
 
-    <FlyoutItem Title="Profile"
-                Route="profile">
-        <ShellContent ContentTemplate="{DataTemplate local:Profile}" />
-    </FlyoutItem>
-    <FlyoutItem Title="My Games"
-                Route="mygames">
-        <FlyoutItem.Style>
-            <Style TargetType="FlyoutItem">
-                <Setter Property="IsVisible"
-                        Value="false" />
-                <Style.Triggers>
-                    <DataTrigger TargetType="FlyoutItem"
-                                 Binding="{Binding IsConnected}"
-                                 Value="True">
-                        <Setter Property="IsVisible"
-                                Value="True" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </FlyoutItem.Style>
-        <ShellContent ContentTemplate="{DataTemplate local:MyGames}" />
-    </FlyoutItem>
 </Shell>
