@@ -24,10 +24,33 @@ namespace Gauniv.Client.ViewModel
         [ObservableProperty]
         private ObservableCollection<Model.GameDto> gamesDto = new(); // Liste des jeux
 
+        public ICommand BuyCommand { get; }
+
+
         // Constructeur
         public IndexViewModel()
         {
             GetGames(); // Récupération des jeux
+
+            BuyCommand = new RelayCommand<Model.GameDto>(OnBuyClicked);
+
+        }
+        private void OnBuyClicked(Model.GameDto game)
+        {
+            //Login automatique pour tester
+            Task.Run(async () =>
+            {
+                await NetworkService.Instance.Login("user@user.com", "password");
+            });
+            // Logique d'achat ici
+            Console.WriteLine($"Achat du jeu: {game.Name}");
+            var gameRecup = game;
+            //Send the game to the database through the API
+            Task.Run(async () =>
+            {
+                await NetworkService.Instance.BuyGame(gameRecup.Id);
+            });
+
         }
 
         public async Task GetGames()
@@ -58,5 +81,6 @@ namespace Gauniv.Client.ViewModel
                 Console.WriteLine($"Erreur API : {ex.Message}");
             }
         }
+
     }
 }

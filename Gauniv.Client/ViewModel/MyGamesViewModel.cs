@@ -56,6 +56,5 @@ namespace Gauniv.Client.ViewModel
                 Console.WriteLine($"Erreur API : {ex.Message}");
             }
         }
-
     }
 }
