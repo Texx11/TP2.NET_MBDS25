@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Gauniv.Network;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Net.Security;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Store.Preview.InstallControl;
 using Windows.Media.Protection.PlayReady;
 
 namespace Gauniv.Client.Services
@@ -14,14 +16,28 @@ namespace Gauniv.Client.Services
     internal partial class NetworkService : ObservableObject
     {
 
+        private readonly WebServeurLinking _apiClient;
+
         public static NetworkService Instance { get; private set; } = new NetworkService();
         [ObservableProperty]
         private string token;
         public HttpClient httpClient;
 
-        public NetworkService() {
+        public NetworkService()
+        {
             httpClient = new HttpClient();
             Token = null;
+            _apiClient = new WebServeurLinking(httpClient);
+        }
+            
+        public async Task<ICollection<GameDto>> GetGameList()
+        {
+            return await _apiClient.GameAsync(0, 10, null);
+        }
+
+        public async Task<ICollection<CategoryDto>> GetCategoryList()
+        {
+            return await _apiClient.CategoryAsync(0, 10);
         }
 
         public event Action OnConnected;

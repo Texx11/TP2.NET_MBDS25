@@ -17,40 +17,39 @@ using System.Windows.Input;
 
 namespace Gauniv.Client.ViewModel
 {
-    public partial class IndexViewModel : ObservableObject
+    public partial class CategoriesViewModel : ObservableObject
     {
 
 
         [ObservableProperty]
-        private ObservableCollection<Model.GameDto> gamesDto = new(); // Liste des jeux
+        private ObservableCollection<Model.CategoryDto> categoryDtos = new(); // Liste des jeux
 
         // Constructeur
-        public IndexViewModel()
+        public CategoriesViewModel()
         {
-            GetGames(); // Récupération des jeux
+            GetCategories(); // Récupération des jeux
         }
 
-        public async Task GetGames()
+
+        public async Task GetCategories()
         {
             try
             {
                 Task.Run(async () =>
                 {
-                    var lastGames = await NetworkService.Instance.GetGameList();
-                    gamesDto.Clear();
-                    foreach (var g in lastGames)
+                    var lastCategoryDtos = await NetworkService.Instance.GetCategoryList();
+                    categoryDtos.Clear();
+                    foreach (var c in lastCategoryDtos)
                     {
-                        Model.GameDto gameDto = new Model.GameDto
+                        Model.CategoryDto categoryDto = new Model.CategoryDto
                         {
-                            Id = g.Id,
-                            Name = g.Name,
-                            Description = g.Description,
-                            Price = g.Price,
+                            Id = c.Id,
+                            Name = c.Name
                         };
-                        gamesDto.Add(gameDto);
+                        categoryDtos.Add(categoryDto);
                     }
                 });
-
+                var test = categoryDtos;
                 Console.WriteLine("Données récupérées avec succès !");
             }
             catch (ApiException ex)

@@ -19,7 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="OpenAPIs\" />
+    <OpenApiReference Include="OpenAPIs\v1.json" ClassName="WebServeurLinking">
+      <SourceUri>https://localhost:7209/openapi/v1.json</SourceUri>
+    </OpenApiReference>
   </ItemGroup>
 
 </Project>

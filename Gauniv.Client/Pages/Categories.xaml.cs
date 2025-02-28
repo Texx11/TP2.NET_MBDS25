@@ -7,13 +7,13 @@ namespace Gauniv.Client.Pages
 {
 
 
-    public partial class Index : ContentPage
+   public partial class Categories : ContentPage
     {
-        private IndexViewModel viewModel;
-        public Index()
+        private CategoriesViewModel viewModel;
+        public Categories()
         {
             InitializeComponent();
-            viewModel = new IndexViewModel();
+            viewModel = new CategoriesViewModel();
             BindingContext = viewModel;
         }
     }

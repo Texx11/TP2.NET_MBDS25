@@ -8,5 +8,8 @@
              Title="MyGames"
              x:DataType="vm:MyGamesViewModel"
              BindingContext="{vm:MyGamesViewModel}">
-    <Label Text="List de mes jeux" />
+    <Label Text="Liste de mes jeux" />
+    
+    
+    
 </ContentPage>

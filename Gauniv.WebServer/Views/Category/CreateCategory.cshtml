@@ -2,14 +2,14 @@
 @using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @{
-    ViewData["Title"] = "View";
+    ViewData["Title"] = "Category Creation";
 }
 <link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
 <link href="~/css/new-category.css" rel="stylesheet" type="text/css" />
 
 <h2>Create a New Category</h2>
 
-<form asp-action="Create" method="post" enctype="multipart/form-data" class="category-form">
+<form asp-controller="Category" asp-action="Create" method="post" enctype="multipart/form-data" class="category-form">
     <div class="form-group">
         <label asp-for="Name">Game Name</label>
         <input asp-for="Name" class="form-control" required />

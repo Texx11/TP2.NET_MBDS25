@@ -63,7 +63,8 @@ namespace Gauniv.WebServer.Models
         public int Id { get; set; }
         public String? Name { get; set; }
 
-        public List<Category> Categories { get; set; } = new List<Category>();
+        public List<Category> Categories {get; set;} = new List<Category>();
+
     }
 
 
