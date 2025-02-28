@@ -19,7 +19,7 @@ namespace Gauniv.WebServer.Api
      * Microsoft.Hosting.Lifetime: Information: Now listening on: http://localhost:5231
      */
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/games/[action]")]
     [ApiController]
     public class GamesController : ControllerBase
     {
@@ -90,10 +90,11 @@ namespace Gauniv.WebServer.Api
          * Test : http://localhost:5231/game/mygames
          */
 
-        [HttpGet("/game/mygames")]
+        //[HttpGet("/game/mygames")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ActionName("mygames")]
         public async Task<IActionResult> GetUserGames(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10,
