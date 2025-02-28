@@ -95,7 +95,7 @@ namespace Gauniv.WebServer.Api
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ActionName("mygames")]
-        public async Task<IActionResult> GetUserGames(
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetUserGames(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10,
             [FromQuery] string? category = null)
@@ -143,7 +143,7 @@ namespace Gauniv.WebServer.Api
                 })
                 .ToListAsync();
 
-            return Ok(userGames);
+            return userGames;
         }
     }
 }

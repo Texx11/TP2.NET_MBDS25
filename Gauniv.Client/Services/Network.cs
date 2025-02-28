@@ -20,13 +20,13 @@ namespace Gauniv.Client.Services
 
         public static NetworkService Instance { get; private set; } = new NetworkService();
         [ObservableProperty]
-        private string token;
+        private string? tokenMem;
         public HttpClient httpClient;
 
         public NetworkService()
         {
             httpClient = new HttpClient();
-            Token = null;
+            tokenMem = null;
             _apiClient = new WebServeurLinking(httpClient);
         }
             
@@ -40,7 +40,41 @@ namespace Gauniv.Client.Services
             return await _apiClient.CategoryAsync(0, 10);
         }
 
-        public event Action OnConnected;
+        public async Task<ICollection<GameDto>> GetGameUserList()
+        {
+            if (string.IsNullOrEmpty(tokenMem))
+            {
+                return null;
+            }
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenMem);
+            try
+            {
+                return await _apiClient.MygamesAsync(0, 10, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while fetching games: {ex.Message}");
+                return null;
+            }
+        }
 
+        public async Task<string> Login(string username, string password)
+        {
+            var loginRequest = new LoginRequest
+            {
+                Email = username,
+                Password = password
+            };
+
+            var token = await _apiClient.LoginAsync(false, false, loginRequest);
+            if (token != null)
+            {
+                this.tokenMem = token.AccessToken;
+                return token.AccessToken;
+            }
+            return null;
+        }
+
+        public event Action OnConnected;
     }
 }

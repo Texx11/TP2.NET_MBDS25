@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace Gauniv.WebServer.Api
 
@@ -70,6 +71,36 @@ namespace Gauniv.WebServer.Api
                 .ToListAsync();
 
             return categories;
+        }
+
+
+        /**
+         * Liste des jeux d'une catégorie
+         * --------------------------------------------
+         * Test : http://localhost:5231/category/1
+         */
+        [HttpGet("/category/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetCategoryGames(
+             [FromRoute] int id)
+        {
+            var category = await appDbContext.Categories
+                .Include(c => c.Games)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+            var games = category.Games.Select(g => new GameDto
+            {
+                Id = g.Id, 
+                Name = g.Name,
+                Description = g.Description,
+                Price = g.Price
+            }).ToList();
+
+            return games;
         }
     }
 }
