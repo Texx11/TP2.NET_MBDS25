@@ -17,6 +17,7 @@
         <ShellContent Title="Bibliothèque" ContentTemplate="{DataTemplate local:MyGames}" />
         <ShellContent Title="Categories" ContentTemplate="{DataTemplate local:Categories}"/>
         <ShellContent Title="Profil" ContentTemplate="{DataTemplate local:Profile}" />
+        <ShellContent Title="Login" ContentTemplate="{DataTemplate local:Login}"/>
     </TabBar>
     
     

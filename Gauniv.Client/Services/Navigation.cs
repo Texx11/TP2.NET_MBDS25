@@ -37,6 +37,5 @@ namespace Gauniv.Client.Services
             // Si vous avez une exception ici, cela veut dire que le constructeur de votre view model ne correspond pas au paramèetres que vous passez !
             await Shell.Current.GoToAsync($"{typeof(T).Name}", args);
         }
-
     }
 }

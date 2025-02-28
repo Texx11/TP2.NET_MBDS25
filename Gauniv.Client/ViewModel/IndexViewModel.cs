@@ -17,50 +17,125 @@ using System.Windows.Input;
 
 namespace Gauniv.Client.ViewModel
 {
+    [QueryProperty(nameof(Username), nameof(Username))]
     public partial class IndexViewModel : ObservableObject
     {
 
+        private readonly NavigationService _navigationService;
 
         [ObservableProperty]
         private ObservableCollection<Model.GameDto> gamesDto = new(); // Liste des jeux
 
+        //Liste des jeux non achetés par l'utilisateur
+        [ObservableProperty]
+        private ObservableCollection<Model.GameDto> gamesDtoNotUser = new(); // Liste des jeux
+
+        //Liste des jeux affichés
+        public ObservableCollection<Model.GameDto> DisplayedGames => IsConnected ? GamesDtoNotUser : GamesDto;
+
+        [ObservableProperty]
+        private bool isConnected = NetworkService.Instance.TokenMem != null;
+
+        [ObservableProperty]
+        private string? username;
+
         public ICommand BuyCommand { get; }
+
+        private NetworkService _networkService;
 
 
         // Constructeur
         public IndexViewModel()
         {
+            _networkService = NetworkService.Instance;
+            NetworkService.Instance.OnConnected += Instance_OnConnected;
+            _navigationService = NavigationService.Instance;
             GetGames(); // Récupération des jeux
 
             BuyCommand = new RelayCommand<Model.GameDto>(OnBuyClicked);
+        }
+
+        private void Instance_OnConnected()
+        {
+            IsConnected = true;
+            UpdateDisplayedGames();
 
         }
+        private void UpdateDisplayedGames()
+        {
+            DisplayedGames.Clear();
+            var source = IsConnected ? GamesDto : GamesDtoNotUser;
+            foreach (var game in source)
+            {
+                DisplayedGames.Add(game);
+            }
+            Debug.WriteLine(DisplayedGames.Count + " / " + gamesDto.Count + " / " + gamesDtoNotUser.Count);
+        }
+
+        [RelayCommand]
+        public async Task NavigateToMyGame()
+        {
+            _navigationService.Navigate<MyGames>(new Dictionary<string, object>());
+        }
+
+        [RelayCommand]
+        public void LoadGames()
+        {
+            this.GetGames();
+        }
+
+        [RelayCommand]
+        public async Task NavigateToLogin()
+        {
+            _navigationService.Navigate<Login>(new Dictionary<string, object>());
+        }
+
         private void OnBuyClicked(Model.GameDto game)
         {
             //Login automatique pour tester
+            /*
             Task.Run(async () =>
             {
                 await NetworkService.Instance.Login("user@user.com", "password");
-            });
-            // Logique d'achat ici
-            Console.WriteLine($"Achat du jeu: {game.Name}");
-            var gameRecup = game;
+            });*/
             //Send the game to the database through the API
-            Task.Run(async () =>
+            if (_networkService.TokenMem != null)
             {
-                await NetworkService.Instance.BuyGame(gameRecup.Id);
-            });
-
+                Task.Run(async () =>
+                {
+                    await NetworkService.Instance.BuyGame(game.Id);
+                    await GetGames();
+                    // BUG REDIRECTION
+                    //_navigationService.Navigate<MyGames>(new Dictionary<string, object>());
+                });
+            }
+            else
+            {
+                //If the user is not connected, we redirect him to the login page
+                this.NavigateToLogin();
+            }
         }
 
         public async Task GetGames()
         {
             try
             {
-                Task.Run(async () =>
+                await MainThread.InvokeOnMainThreadAsync(async () =>
                 {
+                    HashSet<int> gameIds = new HashSet<int>();
+                    if (IsConnected)
+                    {
+                        gamesDtoNotUser.Clear();
+                        var userGames = await NetworkService.Instance.GetGameUserList();
+                        foreach (var g in userGames)
+                        {
+                            gameIds.Add(g.Id);
+                        }
+                    }
+
                     var lastGames = await NetworkService.Instance.GetGameList();
                     gamesDto.Clear();
+                    
                     foreach (var g in lastGames)
                     {
                         Model.GameDto gameDto = new Model.GameDto
@@ -71,14 +146,22 @@ namespace Gauniv.Client.ViewModel
                             Price = g.Price,
                         };
                         gamesDto.Add(gameDto);
+                        if (IsConnected)
+                        {
+                            if (!gameIds.Contains(g.Id))  
+                            {
+                                gamesDtoNotUser.Add(gameDto);
+                                gameIds.Add(g.Id);
+                            }
+                        }
                     }
                 });
-
-                Console.WriteLine("Données récupérées avec succès !");
+                
+                Debug.WriteLine("Données récupérées avec succès !");
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Erreur API : {ex.Message}");
+                Debug.WriteLine($"Erreur API : {ex.Message}");
             }
         }
 

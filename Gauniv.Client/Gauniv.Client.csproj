@@ -97,6 +97,9 @@
 	  <MauiXaml Update="Pages\Categories.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\Login.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\MyGames.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

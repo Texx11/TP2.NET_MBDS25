@@ -8,15 +8,60 @@
             Title="Index"
             x:Name="IndexView">
 
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior EventName="Appearing" Command="{Binding LoadGamesCommand}" />
+        
+    </ContentPage.Behaviors>
+
     <ContentPage.BindingContext>
         <vm:IndexViewModel />
     </ContentPage.BindingContext>
-
+    
     <ScrollView>
         <StackLayout>
             <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
-            <Label Text="Liste des jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0"/>
-            <CollectionView ItemsSource="{Binding GamesDto}" Margin="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Label centré -->
+                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Liste des jeux" FontSize="Header" FontAttributes="Bold" 
+                        HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0" />
+                
+                <!-- Button aligné à gauche -->
+                <Button Grid.Row="0" Grid.Column="1" Margin="0,10,30,0" Text="Se connecter" BackgroundColor="#137EAF" 
+                            TextColor="White"
+                            Command="{Binding NavigateToLoginCommand}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="True">
+                            <Setter Property="IsVisible" Value="False"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="False">
+                            <Setter Property="IsVisible" Value="True"/>
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Label Grid.Row="0" Grid.Column="1" Margin="0,25,30,0" Text="{Binding Username, StringFormat='Connecté: {0}'}"
+                        HorizontalTextAlignment="Center" TextColor="White">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsConnected}" Value="True">
+                            <Setter Property="IsVisible" Value="True"/>
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsConnected}" Value="False">
+                            <Setter Property="IsVisible" Value="False"/>
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+
+            </Grid>
+            <CollectionView ItemsSource="{Binding DisplayedGames}" Margin="20">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"  Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10"/>
                 </CollectionView.ItemsLayout>
