@@ -38,11 +38,12 @@ namespace Gauniv.WebServer.Api
         /**
          * Liste des categories
          * --------------------------------------------
-         * Test : http://localhost:5231/category
+         * Test : http://localhost:5231/api/category
          */
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ActionName("")]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10)
@@ -79,9 +80,10 @@ namespace Gauniv.WebServer.Api
          * --------------------------------------------
          * Test : http://localhost:5231/category/1
          */
-        [HttpGet("/category/{id}")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ActionName("{id}")]
         public async Task<ActionResult<IEnumerable<GameDto>>> GetCategoryGames(
              [FromRoute] int id)
         {

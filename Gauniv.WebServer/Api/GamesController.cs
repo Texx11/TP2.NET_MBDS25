@@ -19,7 +19,7 @@ namespace Gauniv.WebServer.Api
      * Microsoft.Hosting.Lifetime: Information: Now listening on: http://localhost:5231
      */
 {
-    [Route("api/games/[action]")]
+    [Route("api/game/[action]")]
     [ApiController]
     public class GamesController : ControllerBase
     {
@@ -37,11 +37,12 @@ namespace Gauniv.WebServer.Api
         /**
          * Liste des jeux disponibles pour tout le monde
          * --------------------------------------------
-         * Test : http://localhost:5231/game
+         * Test : http://localhost:5231/api/game
          */
-        [HttpGet("/game")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ActionName("")]
         public async Task<ActionResult<IEnumerable<GameDto>>> GetGames(
             [FromQuery] int offset = 0,
             [FromQuery] int limit = 10,
@@ -87,10 +88,10 @@ namespace Gauniv.WebServer.Api
         /**
          * Liste des jeux disponibles pour tout le monde
          * --------------------------------------------
-         * Test : http://localhost:5231/game/mygames
+         * Test : http://localhost:5231/api/game/mygames
          */
 
-        //[HttpGet("/game/mygames")]
+        [HttpGet]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
