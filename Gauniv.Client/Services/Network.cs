@@ -75,6 +75,29 @@ namespace Gauniv.Client.Services
             return null;
         }
 
+        public async Task BuyGame(int gameId)
+        {
+            if (string.IsNullOrEmpty(tokenMem))
+            {
+                return;
+            }
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenMem);
+            try
+            {
+                await _apiClient.BuyAsync(gameId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while buying game: {ex.Message}");
+            }
+
+            var games = await GetGameUserList();
+            if (games != null)
+            {
+                Console.WriteLine("Games bought successfully!");
+            }
+        }
+
         public event Action OnConnected;
     }
 }
