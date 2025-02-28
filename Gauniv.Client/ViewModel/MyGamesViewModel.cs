@@ -23,16 +23,20 @@ namespace Gauniv.Client.ViewModel
 
         public MyGamesViewModel()
         {
+            GetUserGames(); // Récupération des jeux
         }
 
         public async Task GetUserGames()
         {
+            //Login factice pour l'instant
+            string response = await NetworkService.Instance.Login("user@user.com", "password");
+            this.UserGamesDto.Clear();
             try
             {
+                // await MainThread.InvokeOnMainThreadAsync(() =>
                 Task.Run(async () =>
                 {
                     var lastGames = await NetworkService.Instance.GetGameUserList();
-                    userGamesDto.Clear();
                     foreach (var g in lastGames)
                     {
                         Model.GameDto gameDto = new Model.GameDto
@@ -42,7 +46,7 @@ namespace Gauniv.Client.ViewModel
                             Description = g.Description,
                             Price = g.Price,
                         };
-                        userGamesDto.Add(gameDto);
+                        this.UserGamesDto.Add(gameDto);
                     }
                 });
                 Console.WriteLine("Données récupérées avec succès !");
