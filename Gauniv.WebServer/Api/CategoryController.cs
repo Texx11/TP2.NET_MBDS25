@@ -20,7 +20,7 @@ namespace Gauniv.WebServer.Api
      * Microsoft.Hosting.Lifetime: Information: Now listening on: http://localhost:5231
      */
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/category/[action]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -40,7 +40,7 @@ namespace Gauniv.WebServer.Api
          * --------------------------------------------
          * Test : http://localhost:5231/category
          */
-        [HttpGet("/category")]
+        [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories(
