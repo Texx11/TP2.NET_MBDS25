@@ -13,7 +13,7 @@
        x:DataType="vm:MenuViewModel">
     <!-- Définir les pages principales de l'application -->
     <TabBar>
-        <ShellContent Title="Magasin" ContentTemplate="{DataTemplate local:Index}" />
+        <ShellContent Title="Magasin" ContentTemplate="{DataTemplate local:Index}"/>
         <ShellContent Title="Bibliothèque" ContentTemplate="{DataTemplate local:MyGames}" />
         <ShellContent Title="Categories" ContentTemplate="{DataTemplate local:Categories}"/>
         <ShellContent Title="Profil" ContentTemplate="{DataTemplate local:Profile}" />

@@ -144,5 +144,34 @@ namespace Gauniv.WebServer.Api
 
             return userGames;
         }
+
+        /**
+         * Ajoute un jeu a la liste des jeux de l'utilisateur
+         * --------------------------------------------
+         * Test : http://localhost:5231/game/buy/1
+         */
+        [HttpPost("/game/buy/{gameId}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult> BuyGame(int gameId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var game = await appDbContext.Games
+                .Include(g => g.Owners)
+                .FirstOrDefaultAsync(g => g.Id == gameId);
+            if (game == null)
+            {
+                return BadRequest("Game not found.");
+            }
+            game.Owners.Add(user);
+            await appDbContext.SaveChangesAsync();
+            return Ok();
+        }
     }
 }
