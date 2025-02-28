@@ -64,7 +64,7 @@ namespace Gauniv.WebServer.Api
             {
                 var categoryIds = category.Split(',')
                                             .Select(int.Parse)
-                                            .ToList();         
+                                            .ToList();
 
                 query = query.Where(g => g.Categories.Any(c => categoryIds.Contains(c.Id)));
             }
@@ -152,11 +152,13 @@ namespace Gauniv.WebServer.Api
          * --------------------------------------------
          * Test : http://localhost:5231/game/buy/1
          */
-        [HttpPost("/game/buy/{gameId}")]
+
+        [HttpPost("{gameId}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ActionName("buy")]
         public async Task<ActionResult> BuyGame(int gameId)
         {
             var user = await userManager.GetUserAsync(User);

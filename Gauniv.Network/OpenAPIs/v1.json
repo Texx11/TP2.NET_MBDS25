@@ -58,7 +58,7 @@
         }
       }
     },
-    "/category": {
+    "/api/category": {
       "get": {
         "tags": [
           "Category"
@@ -136,7 +136,7 @@
         }
       }
     },
-    "/category/{id}": {
+    "/api/category/{id}": {
       "get": {
         "tags": [
           "Category"
@@ -205,7 +205,7 @@
         }
       }
     },
-    "/game": {
+    "/api/game": {
       "get": {
         "tags": [
           "Games"
@@ -291,7 +291,7 @@
         }
       }
     },
-    "/game/mygames": {
+    "/api/game/mygames": {
       "get": {
         "tags": [
           "Games"
@@ -377,7 +377,7 @@
         }
       }
     },
-    "/game/buy/{gameId}": {
+    "/api/game/buy/{gameId}": {
       "post": {
         "tags": [
           "Games"
