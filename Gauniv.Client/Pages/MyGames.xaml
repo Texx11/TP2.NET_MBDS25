@@ -40,8 +40,11 @@
                         <Label Text="Max Price :" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Entry Text="{Binding MaxPrice}" Keyboard="Numeric" WidthRequest="60" />
                     </HorizontalStackLayout>
-                    <!-- Bouton Appliquer -->
-                    <Button Text="Appliquer les filtres" BackgroundColor="#CCC" Command="{Binding ApplyFiltersCommand}" />
+                    <!-- Boutons Appliquer / Réinitialiser -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Appliquer les filtres" BackgroundColor="#CCC" Command="{Binding ApplyFiltersCommand}" HorizontalOptions="FillAndExpand" />
+                        <Button Text="Réinitialiser" BackgroundColor="#999" Command="{Binding ResetFiltersCommand}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
                 </VerticalStackLayout>
             </Frame>
 

@@ -68,6 +68,7 @@ namespace Gauniv.Client.ViewModel
         public ICommand LoadMoreCommand { get; }
         public ICommand NavigateToLoginCommand { get; }
         public ICommand ApplyFiltersCommand { get; }
+        public ICommand ResetFiltersCommand { get; }
 
         public IndexViewModel()
         {
@@ -82,6 +83,7 @@ namespace Gauniv.Client.ViewModel
             LoadMoreCommand = new RelayCommand(OnLoadMore);
             NavigateToLoginCommand = new RelayCommand(NavigateToLogin);
             ApplyFiltersCommand = new RelayCommand(ApplyFilters);
+            ResetFiltersCommand = new RelayCommand(ResetFilters);
 
             _networkService.OnConnected += Instance_OnConnected;
         }
@@ -102,10 +104,11 @@ namespace Gauniv.Client.ViewModel
             IsMoreDataAvailable = true;
             _allGames.Clear();
             DisplayedGames.Clear();
+            // Réinitialisation des filtres par défaut
             SearchName = string.Empty;
             MinPrice = null;
             MaxPrice = null;
-            SelectedCategory = null;
+            SelectedCategory = "Toutes";
             ShowPossessed = false;
 
             await LoadCategoriesAsync();
@@ -115,6 +118,19 @@ namespace Gauniv.Client.ViewModel
         private async void OnLoadMore()
         {
             await LoadMoreInternal();
+        }
+
+        /// <summary>
+        /// Réinitialise les filtres aux valeurs par défaut et réapplique le filtrage.
+        /// </summary>
+        private void ResetFilters()
+        {
+            SearchName = string.Empty;
+            MinPrice = null;
+            MaxPrice = null;
+            SelectedCategory = "Toutes";
+            ShowPossessed = false;
+            ApplyFilters();
         }
 
         /// <summary>
@@ -188,10 +204,12 @@ namespace Gauniv.Client.ViewModel
         {
             var filtered = _allGames.AsEnumerable();
 
+            // Filtre par nom (conversion en minuscules et suppression des espaces)
             if (!string.IsNullOrWhiteSpace(SearchName))
             {
+                string searchLower = SearchName.Trim().ToLower();
                 filtered = filtered.Where(g => !string.IsNullOrEmpty(g.Name) &&
-                    g.Name.Contains(SearchName, System.StringComparison.OrdinalIgnoreCase));
+                                               g.Name.Trim().ToLower().Contains(searchLower));
             }
             if (MinPrice.HasValue)
             {
