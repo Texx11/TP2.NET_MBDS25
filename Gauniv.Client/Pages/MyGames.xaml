@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             x:Class="Gauniv.Client.Pages.MyGames"
-             Title="MyGames" >
-    
+<ContentPage
+    x:Class="Gauniv.Client.Pages.MyGames"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:converters="clr-namespace:Gauniv.Client.Converters"
+    Title="MyGames" >
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringToNullableFloatConverter x:Key="StringToNullableFloatConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Déclenche LoadUserGamesCommand à l'apparition -->
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior EventName="Appearing" Command="{Binding LoadUserGamesCommand}" />
     </ContentPage.Behaviors>
@@ -16,46 +24,61 @@
     </ContentPage.BindingContext>
 
     <ScrollView>
-        <StackLayout>
-            <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
-            <Label Text="Liste des jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0"/>
-            <CollectionView ItemsSource="{Binding UserGamesDto}" Margin="20">
+        <VerticalStackLayout Padding="10" Spacing="15">
+            <!-- Zone de filtres -->
+            <Frame CornerRadius="5" Padding="10" BackgroundColor="#EFEFEF">
+                <VerticalStackLayout Spacing="10">
+                    <!-- Filtre: Nom -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Nom :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding SearchName}" Placeholder="Ex: Mario" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+                    <!-- Filtre: Catégorie -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Catégorie :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Picker ItemsSource="{Binding CategoriesList}"
+                                SelectedItem="{Binding SelectedCategory}"
+                                Title="Toutes" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+                    <!-- Filtre: MinPrice / MaxPrice -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Min Price :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding MinPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
+                        <Label Text="Max Price :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding MaxPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
+                    </HorizontalStackLayout>
+                    <!-- Boutons Appliquer / Réinitialiser -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Appliquer les filtres" BackgroundColor="#CCC" Command="{Binding ApplyFiltersCommand}" HorizontalOptions="FillAndExpand" />
+                        <Button Text="Réinitialiser" BackgroundColor="#999" Command="{Binding ResetFiltersCommand}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <Label Text="Liste de mes jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" />
+
+            <CollectionView ItemsSource="{Binding FilteredUserGames}" Margin="0,0,0,10">
                 <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical"  Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10"/>
+                    <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border StrokeThickness="2" Padding="20,0,20,20" BackgroundColor="White">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width=".05*"/>
-                                    <ColumnDefinition Width=".6*" />
-                                    <ColumnDefinition Width=".05*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Padding="0,5">
-                                    <Label Text="{Binding Id, StringFormat='{0}#'}" FontSize="Small" HorizontalOptions="Center" TextColor="LightGray"/>
-                                </VerticalStackLayout>
-                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Padding="0,5">
-                                    <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" TextColor="Black"/>
-                                </VerticalStackLayout>
-                                <!-- Ligne pour la séparation entre le nom et le reste -->
-                                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-                                    <BoxView BackgroundColor="LightGray" HeightRequest="1" HorizontalOptions="Fill"/>
-                                </Grid>
-                                <VerticalStackLayout Grid.Row="2" Grid.Column="1" HorizontalOptions="Center" Margin="0,10,0,10">
-                                    <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic"/>
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Border>
+                        <Frame CornerRadius="5" Padding="10" HasShadow="True" Margin="5">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding Id, StringFormat='#{0}'}" FontSize="Small" TextColor="Gray" HorizontalOptions="Center" />
+                                <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="Fill" />
+                                <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic" TextColor="Gray" />
+                                <Label Text="{Binding CategoriesString}" FontSize="Micro" TextColor="DarkGray" />
+                                <Label Text="{Binding Price, StringFormat='Price : {0} $'}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </StackLayout>
-    </ScrollView>
 
+            <Button Text="Charger plus" HorizontalOptions="Center" BackgroundColor="#137EAF" TextColor="White"
+                    Command="{Binding LoadMoreUserGamesCommand}" IsVisible="{Binding IsMoreDataAvailable}" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

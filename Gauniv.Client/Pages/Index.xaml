@@ -1,25 +1,73 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"  
-            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"  
-            xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"  
-            xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"  
-            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
-            x:Class="Gauniv.Client.Pages.Index"  
-            Title="Index"
-            x:Name="IndexView">
+<ContentPage
+    x:Class="Gauniv.Client.Pages.Index"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:converters="clr-namespace:Gauniv.Client.Converters"
+    Title="Index"
+    x:Name="IndexView">
 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringToNullableFloatConverter x:Key="StringToNullableFloatConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Déclenche LoadGamesCommand à l'apparition -->
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior EventName="Appearing" Command="{Binding LoadGamesCommand}" />
-        
     </ContentPage.Behaviors>
 
     <ContentPage.BindingContext>
         <vm:IndexViewModel />
     </ContentPage.BindingContext>
-    
+
     <ScrollView>
-        <StackLayout>
-            <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
+        <VerticalStackLayout Padding="10" Spacing="15">
+            <!-- Zone de filtres -->
+            <Frame CornerRadius="5" Padding="10" BackgroundColor="#EFEFEF">
+                <VerticalStackLayout Spacing="10">
+                    <!-- Filtre: Nom -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Nom :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding SearchName}" Placeholder="Ex: Zelda" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+                    <!-- Filtre: Catégorie -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Catégorie :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Picker ItemsSource="{Binding CategoriesList}"
+                                SelectedItem="{Binding SelectedCategory}"
+                                Title="Toutes" HorizontalOptions="FillAndExpand" />
+                    </HorizontalStackLayout>
+                    <!-- Filtre: MinPrice / MaxPrice -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Min Price :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding MinPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
+                        <Label Text="Max Price :" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <Entry Text="{Binding MaxPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
+                    </HorizontalStackLayout>
+                    <!-- Filtre: Possédé (uniquement si connecté) -->
+                    <HorizontalStackLayout Spacing="5">
+                        <Label Text="Possédé ?" WidthRequest="80" VerticalTextAlignment="Center" />
+                        <CheckBox IsChecked="{Binding ShowPossessed}" />
+                        <Label Text="{Binding ShowPossessed, StringFormat='({0})'}" VerticalTextAlignment="Center" />
+                        <HorizontalStackLayout.Triggers>
+                            <DataTrigger TargetType="HorizontalStackLayout" Binding="{Binding IsConnected}" Value="False">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </HorizontalStackLayout.Triggers>
+                    </HorizontalStackLayout>
+                    <!-- Boutons Appliquer / Réinitialiser -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Appliquer les filtres" BackgroundColor="#CCC" Command="{Binding ApplyFiltersCommand}" HorizontalOptions="FillAndExpand" />
+                        <Button Text="Réinitialiser" BackgroundColor="#999" Command="{Binding ResetFiltersCommand}" HorizontalOptions="End" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Zone d'en‐tête -->
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -31,13 +79,20 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Label centré -->
-                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Liste des jeux" FontSize="Header" FontAttributes="Bold" 
-                        HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0" />
-                
-                <!-- Button aligné à gauche -->
-                <Button Grid.Row="0" Grid.Column="1" Margin="0,10,30,0" Text="Se connecter" BackgroundColor="#137EAF" 
-                            TextColor="White"
-                            Command="{Binding NavigateToLoginCommand}">
+                <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                       Text="Liste des jeux"
+                       FontSize="Header"
+                       FontAttributes="Bold" 
+                       HorizontalTextAlignment="Center"
+                       TextColor="White"
+                       Padding="10,0,10,0" />
+
+                <!-- Bouton Se connecter (affiché si non connecté) -->
+                <Button Grid.Row="0" Grid.Column="1" Margin="0,10,30,0"
+                        Text="Se connecter" 
+                        BackgroundColor="#137EAF" 
+                        TextColor="White"
+                        Command="{Binding NavigateToLoginCommand}">
                     <Button.Triggers>
                         <DataTrigger TargetType="Button" Binding="{Binding IsConnected}" Value="True">
                             <Setter Property="IsVisible" Value="False"/>
@@ -48,8 +103,11 @@
                     </Button.Triggers>
                 </Button>
 
-                <Label Grid.Row="0" Grid.Column="1" Margin="0,25,30,0" Text="{Binding Username, StringFormat='Connecté: {0}'}"
-                        HorizontalTextAlignment="Center" TextColor="White">
+                <!-- Label Connecté (affiché si connecté) -->
+                <Label Grid.Row="0" Grid.Column="1" Margin="0,25,30,0"
+                       Text="{Binding Username, StringFormat='Connecté: {0}'}"
+                       HorizontalTextAlignment="Center"
+                       TextColor="White">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label" Binding="{Binding IsConnected}" Value="True">
                             <Setter Property="IsVisible" Value="True"/>
@@ -59,65 +117,43 @@
                         </DataTrigger>
                     </Label.Triggers>
                 </Label>
-
             </Grid>
-            <CollectionView ItemsSource="{Binding DisplayedGames}" Margin="20">
+
+            <!-- CollectionView des jeux -->
+            <CollectionView ItemsSource="{Binding DisplayedGames}" Margin="0,0,0,10">
                 <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical"  Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10"/>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="2"
+                                     VerticalItemSpacing="10"
+                                     HorizontalItemSpacing="10" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border StrokeThickness="2" Padding="20,0,20,20" BackgroundColor="White">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width=".05*"/>
-                                    <ColumnDefinition Width=".6*" />
-                                    <ColumnDefinition Width=".05*" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <VerticalStackLayout Grid.Row="0" Grid.Column="0" Padding="0,5">
-                                    <Label Text="{Binding Id, StringFormat='{0}#'}" FontSize="Small" HorizontalOptions="Center" TextColor="LightGray"/>
-                                </VerticalStackLayout>
-                                <VerticalStackLayout Grid.Row="0" Grid.Column="1" Padding="0,5">
-                                    <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" TextColor="Black"/>
-                                </VerticalStackLayout>
-                                <!-- Ligne pour la séparation entre le nom et le reste -->
-                                <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-                                    <BoxView BackgroundColor="LightGray" HeightRequest="1" HorizontalOptions="Fill"/>
-                                </Grid>
-                                <VerticalStackLayout Grid.Row="2" Grid.Column="1" HorizontalOptions="Center" Margin="0,10,0,10">
-                                    <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic"/>
-                                </VerticalStackLayout>
-                                <VerticalStackLayout Grid.Row="3" Grid.Column="1">
-                                    <Label Text="{Binding Price, StringFormat='Price : {0} $'}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                    <Button Text="Buy"
-                                            FontSize="Small"
-                                            BackgroundColor="#137EAF"
-                                            TextColor="White"
-                                            MaximumWidthRequest="200"
-                                            Margin="0,20,0,0"
-                                            Command="{Binding BindingContext.BuyCommand, Source={x:Reference Name=IndexView}}"
-                                            CommandParameter="{Binding .}">
-                                        <Button.Triggers>
-
-                                            <!-- Changement de couleur et effet zoom quand la souris est dessus -->
-                                            <Trigger TargetType="Button" Property="IsPressed" Value="True">
-                                                <Setter Property="BackgroundColor" Value="#0E5C87"/>
-                                                <Setter Property="Scale" Value="0.95"/>
-                                            </Trigger>
-                                        </Button.Triggers>
-                                    </Button>
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Border>
+                        <Frame CornerRadius="5" Padding="10" HasShadow="True" Margin="5">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding Id, StringFormat='#{0}'}" FontSize="Small" TextColor="Gray" HorizontalOptions="Center" />
+                                <Label Text="{Binding Name}" FontSize="Medium" FontAttributes="Bold" TextColor="Black" HorizontalOptions="Center" />
+                                <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="Fill" />
+                                <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic" TextColor="Gray" />
+                                <Label Text="{Binding CategoriesString}" FontSize="Micro" TextColor="DarkGray" />
+                                <Label Text="{Binding Price, StringFormat='Price : {0} $'}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" />
+                                <Button Text="Buy" BackgroundColor="#137EAF" TextColor="White"
+                                        Command="{Binding Source={x:Reference Name=IndexView}, Path=BindingContext.BuyCommand}"
+                                        CommandParameter="{Binding .}" />
+                            </VerticalStackLayout>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </StackLayout>
+
+            <!-- Bouton Load More -->
+            <Button Text="Charger plus"
+                    HorizontalOptions="Center"
+                    BackgroundColor="#137EAF"
+                    TextColor="White"
+                    Margin="0,0,0,20"
+                    Command="{Binding LoadMoreCommand}"
+                    IsVisible="{Binding IsMoreDataAvailable}" />
+        </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

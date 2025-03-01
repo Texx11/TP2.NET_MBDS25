@@ -1,15 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Gauniv.Network;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Net.Security;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Store.Preview.InstallControl;
-using Windows.Media.Protection.PlayReady;
 
 namespace Gauniv.Client.Services
 {
@@ -29,12 +22,20 @@ namespace Gauniv.Client.Services
             tokenMem = null;
             _apiClient = new WebServeurLinking(httpClient);
         }
-            
+
+      
         public async Task<ICollection<GameDto>> GetGameList()
         {
             return await _apiClient.GameAsync(0, 10, null);
         }
 
+        
+        public async Task<ICollection<GameDto>> GetGameList(int offset, int limit)
+        {
+            return await _apiClient.GameAsync(offset, limit, null);
+        }
+
+        
         public async Task<ICollection<CategoryDto>> GetCategoryList()
         {
             return await _apiClient.CategoryAsync(0, 10);
@@ -54,6 +55,24 @@ namespace Gauniv.Client.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while fetching games: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<ICollection<GameDto>> GetGameUserList(int offset, int limit)
+        {
+            if (string.IsNullOrEmpty(tokenMem))
+            {
+                return null;
+            }
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenMem);
+            try
+            {
+                return await _apiClient.MygamesAsync(offset, limit, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while fetching user games: {ex.Message}");
                 return null;
             }
         }

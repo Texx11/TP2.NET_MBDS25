@@ -1,81 +1,198 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gauniv.Client.Model;
-using Gauniv.Client.Pages;
 using Gauniv.Client.Services;
 using Gauniv.Network;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
+
+// Alias pour désambiguïser GameDto provenant du réseau
+using NetworkGameDto = Gauniv.Network.GameDto;
 
 namespace Gauniv.Client.ViewModel
 {
-    public partial class MyGamesViewModel: ObservableObject
+    public partial class MyGamesViewModel : ObservableObject
     {
+        private readonly NetworkService _networkService;
 
+        // On conserve tous les jeux possédés chargés (convertis en GameItem)
+        private List<GameItem> _allUserGames = new();
+
+        private int offset = 0;
+        private int limit = 4;
 
         [ObservableProperty]
-        private ObservableCollection<Model.GameDto> userGamesDto = new(); // Liste des jeux
+        private bool isMoreDataAvailable = true;
 
-        private NetworkService _networkService;
+        // Propriétés de filtres
+        [ObservableProperty]
+        private string searchName;
+
+        [ObservableProperty]
+        private float? minPrice;
+
+        [ObservableProperty]
+        private float? maxPrice;
+
+        [ObservableProperty]
+        private string selectedCategory;
+
+        // Liste des catégories pour le Picker
+        [ObservableProperty]
+        private ObservableCollection<string> categoriesList = new();
+
+        // Résultat filtré affiché (utilise GameItem)
+        [ObservableProperty]
+        private ObservableCollection<GameItem> filteredUserGames = new();
+
+        // Commandes
+        public ICommand ResetFiltersCommand { get; }
+
         public MyGamesViewModel()
         {
             _networkService = NetworkService.Instance;
-            this.UserGamesDto.Clear();
-            GetUserGames(); // Récupération des jeux
+            _allUserGames.Clear();
+            ResetFiltersCommand = new RelayCommand(ResetFilters);
         }
 
-        public async Task GetUserGames()
+        [RelayCommand]
+        public void LoadUserGames()
         {
-            //Login factice pour l'instant
-            //string response = await NetworkService.Instance.Login("user@user.com", "password");
-            this.UserGamesDto.Clear();
+            offset = 0;
+            isMoreDataAvailable = true;
+            _allUserGames.Clear();
+            FilteredUserGames.Clear();
+
+            // Réinitialisation des filtres par défaut
+            SearchName = string.Empty;
+            MinPrice = null;
+            MaxPrice = null;
+            SelectedCategory = "Toutes";
+
+            Task.Run(async () => await LoadCategoriesAsync());
+            GetUserGamesChunk();
+        }
+
+        [RelayCommand]
+        public void LoadMoreUserGames()
+        {
+            GetUserGamesChunk();
+        }
+
+        [RelayCommand]
+        public void ApplyFilters()
+        {
+            ApplyFilterInternal();
+        }
+
+        private async Task LoadCategoriesAsync()
+        {
+            try
+            {
+                var cats = await _networkService.GetCategoryList();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    categoriesList.Clear();
+                    categoriesList.Add("Toutes");
+                    if (cats != null)
+                    {
+                        foreach (var c in cats)
+                        {
+                            if (!string.IsNullOrEmpty(c.Name))
+                                categoriesList.Add(c.Name);
+                        }
+                    }
+                    SelectedCategory = "Toutes";
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Erreur lors du chargement des catégories: " + ex.Message);
+            }
+        }
+
+        private void ResetFilters()
+        {
+            SearchName = string.Empty;
+            MinPrice = null;
+            MaxPrice = null;
+            SelectedCategory = "Toutes";
+            ApplyFilterInternal();
+        }
+
+        private async void GetUserGamesChunk()
+        {
             if (_networkService.TokenMem == null)
             {
                 return;
             }
             try
             {
-                // await MainThread.InvokeOnMainThreadAsync(() =>
-                var lastGames = await _networkService.GetGameUserList();
-                await MainThread.InvokeOnMainThreadAsync(() =>
+                var lastGamesNetwork = await _networkService.GetGameUserList(offset, limit);
+                if (lastGamesNetwork == null || lastGamesNetwork.Count == 0)
                 {
-                    foreach (var g in lastGames)
+                    isMoreDataAvailable = false;
+                    return;
+                }
+                offset += lastGamesNetwork.Count;
+                foreach (NetworkGameDto netGame in lastGamesNetwork)
+                {
+                    var gameItem = new GameItem
                     {
-                        if (!UserGamesDto.Any(game => game.Id == g.Id))
-                        {
-                            Model.GameDto gameDto = new Model.GameDto
-                            {
-                                Id = g.Id,
-                                Name = g.Name,
-                                Description = g.Description,
-                                Price = g.Price,
-                            };
-
-                            UserGamesDto.Add(gameDto);
-                        }
-                    }
-                });
-                Console.WriteLine("Données récupérées avec succès !");
+                        Id = netGame.Id,
+                        Name = netGame.Name,
+                        Description = netGame.Description,
+                        Price = netGame.Price,
+                        Categories = new List<string>(netGame.Categories)
+                    };
+                    _allUserGames.Add(gameItem);
+                }
+                ApplyFilterInternal();
+                if (lastGamesNetwork.Count < limit)
+                {
+                    isMoreDataAvailable = false;
+                }
             }
             catch (ApiException ex)
             {
-                Console.WriteLine($"Erreur API : {ex.Message}");
+                Debug.WriteLine($"Erreur API : {ex.Message}");
             }
         }
 
-        [RelayCommand]
-        public void LoadUserGames()
+        private void ApplyFilterInternal()
         {
-            if (_networkService.TokenMem != null)
+            var filtered = _allUserGames.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(SearchName))
             {
-                this.GetUserGames();
+                string searchLower = SearchName.Trim().ToLower();
+                filtered = filtered.Where(g => !string.IsNullOrEmpty(g.Name) &&
+                    g.Name.Trim().ToLower().Contains(searchLower));
             }
+            if (MinPrice.HasValue)
+            {
+                filtered = filtered.Where(g => g.Price >= MinPrice.Value);
+            }
+            if (MaxPrice.HasValue)
+            {
+                filtered = filtered.Where(g => g.Price <= MaxPrice.Value);
+            }
+            if (!string.IsNullOrWhiteSpace(SelectedCategory) && SelectedCategory != "Toutes")
+            {
+                filtered = filtered.Where(g => g.Categories.Any(cat => cat.Equals(SelectedCategory, System.StringComparison.OrdinalIgnoreCase)));
+            }
+            var finalList = filtered.ToList();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                FilteredUserGames.Clear();
+                foreach (var g in finalList)
+                {
+                    FilteredUserGames.Add(g);
+                }
+            });
         }
     }
 }
