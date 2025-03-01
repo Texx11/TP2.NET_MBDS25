@@ -6,10 +6,9 @@ public partial class MyGames : ContentPage
 {
     private MyGamesViewModel viewModel;
     public MyGames()
-	{
-		InitializeComponent();
+    {
+        InitializeComponent();
         viewModel = new MyGamesViewModel();
-        var games = viewModel.UserGamesDto;
         BindingContext = viewModel;
     }
 }
