@@ -16,6 +16,7 @@ namespace Gauniv.Client.Services
         private string? tokenMem;
         public HttpClient httpClient;
 
+        public string? CurrentUserId { get; private set; }
         public NetworkService()
         {
             httpClient = new HttpClient();
@@ -89,6 +90,7 @@ namespace Gauniv.Client.Services
             if (token != null)
             {
                 this.tokenMem = token.AccessToken;
+                CurrentUserId = username;
                 return token.AccessToken;
             }
             return null;
