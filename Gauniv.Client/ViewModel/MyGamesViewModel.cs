@@ -115,9 +115,6 @@ namespace Gauniv.Client.ViewModel
             }
         }
 
-        /// <summary>
-        /// Réinitialise les filtres par défaut et réapplique le filtrage.
-        /// </summary>
         private void ResetFilters()
         {
             SearchName = string.Empty;

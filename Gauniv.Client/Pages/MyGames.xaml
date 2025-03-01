@@ -5,7 +5,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:converters="clr-namespace:Gauniv.Client.Converters"
     Title="MyGames" >
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StringToNullableFloatConverter x:Key="StringToNullableFloatConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <!-- Déclenche LoadUserGamesCommand à l'apparition -->
     <ContentPage.Behaviors>
@@ -36,9 +43,9 @@
                     <!-- Filtre: MinPrice / MaxPrice -->
                     <HorizontalStackLayout Spacing="5">
                         <Label Text="Min Price :" WidthRequest="80" VerticalTextAlignment="Center" />
-                        <Entry Text="{Binding MinPrice}" Keyboard="Numeric" WidthRequest="60" />
+                        <Entry Text="{Binding MinPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
                         <Label Text="Max Price :" WidthRequest="80" VerticalTextAlignment="Center" />
-                        <Entry Text="{Binding MaxPrice}" Keyboard="Numeric" WidthRequest="60" />
+                        <Entry Text="{Binding MaxPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
                     </HorizontalStackLayout>
                     <!-- Boutons Appliquer / Réinitialiser -->
                     <HorizontalStackLayout Spacing="10">

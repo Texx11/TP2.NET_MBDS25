@@ -120,9 +120,6 @@ namespace Gauniv.Client.ViewModel
             await LoadMoreInternal();
         }
 
-        /// <summary>
-        /// Réinitialise les filtres aux valeurs par défaut et réapplique le filtrage.
-        /// </summary>
         private void ResetFilters()
         {
             SearchName = string.Empty;
@@ -133,9 +130,6 @@ namespace Gauniv.Client.ViewModel
             ApplyFilters();
         }
 
-        /// <summary>
-        /// Charge un bloc de jeux depuis le serveur, convertit les objets réseau en GameItem, puis réapplique les filtres.
-        /// </summary>
         private async Task LoadMoreInternal()
         {
             try
@@ -197,9 +191,6 @@ namespace Gauniv.Client.ViewModel
             }
         }
 
-        /// <summary>
-        /// Applique les filtres locaux sur _allGames et met à jour DisplayedGames.
-        /// </summary>
         private async void ApplyFilters()
         {
             var filtered = _allGames.AsEnumerable();
