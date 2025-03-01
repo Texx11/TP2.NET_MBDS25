@@ -9,17 +9,19 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Storage;
 
-// Alias pour désambiguïser GameDto provenant du réseau
 using NetworkGameDto = Gauniv.Network.GameDto;
 
 namespace Gauniv.Client.ViewModel
 {
     public partial class MyGamesViewModel : ObservableObject
     {
-        private readonly NetworkService _networkService;
+        // Clé pour stocker les IDs des jeux téléchargés
+        private string DownloadedGamesKey => $"DownloadedGames_{_networkService.CurrentUserId}";
 
-        // On conserve tous les jeux possédés chargés (convertis en GameItem)
+        private readonly NetworkService _networkService;
         private List<GameItem> _allUserGames = new();
 
         private int offset = 0;
@@ -30,7 +32,7 @@ namespace Gauniv.Client.ViewModel
 
         // Propriétés de filtres
         [ObservableProperty]
-        private string searchName;
+        private string searchName = string.Empty;
 
         [ObservableProperty]
         private float? minPrice;
@@ -39,17 +41,17 @@ namespace Gauniv.Client.ViewModel
         private float? maxPrice;
 
         [ObservableProperty]
-        private string selectedCategory;
+        private string selectedCategory = "Toutes";
 
         // Liste des catégories pour le Picker
         [ObservableProperty]
         private ObservableCollection<string> categoriesList = new();
 
-        // Résultat filtré affiché (utilise GameItem)
+        // Liste des jeux filtrés affichés
         [ObservableProperty]
         private ObservableCollection<GameItem> filteredUserGames = new();
 
-        // Commandes
+        // Commande pour réinitialiser les filtres
         public ICommand ResetFiltersCommand { get; }
 
         public MyGamesViewModel()
@@ -63,7 +65,7 @@ namespace Gauniv.Client.ViewModel
         public void LoadUserGames()
         {
             offset = 0;
-            isMoreDataAvailable = true;
+            IsMoreDataAvailable = true;
             _allUserGames.Clear();
             FilteredUserGames.Clear();
 
@@ -109,7 +111,7 @@ namespace Gauniv.Client.ViewModel
                     SelectedCategory = "Toutes";
                 });
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
                 Debug.WriteLine("Erreur lors du chargement des catégories: " + ex.Message);
             }
@@ -135,10 +137,15 @@ namespace Gauniv.Client.ViewModel
                 var lastGamesNetwork = await _networkService.GetGameUserList(offset, limit);
                 if (lastGamesNetwork == null || lastGamesNetwork.Count == 0)
                 {
-                    isMoreDataAvailable = false;
+                    IsMoreDataAvailable = false;
                     return;
                 }
                 offset += lastGamesNetwork.Count;
+
+                // Récupérer la liste persistante des IDs téléchargés
+                var downloadedList = Preferences.Get(DownloadedGamesKey, "");
+                var downloadedIds = downloadedList.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+
                 foreach (NetworkGameDto netGame in lastGamesNetwork)
                 {
                     var gameItem = new GameItem
@@ -149,12 +156,17 @@ namespace Gauniv.Client.ViewModel
                         Price = netGame.Price,
                         Categories = new List<string>(netGame.Categories)
                     };
+                    // Si l'ID du jeu figure dans la liste sauvegardée, on marque comme téléchargé
+                    if (downloadedIds.Contains(gameItem.Id.ToString()))
+                    {
+                        gameItem.IsDownloaded = true;
+                    }
                     _allUserGames.Add(gameItem);
                 }
                 ApplyFilterInternal();
                 if (lastGamesNetwork.Count < limit)
                 {
-                    isMoreDataAvailable = false;
+                    IsMoreDataAvailable = false;
                 }
             }
             catch (ApiException ex)
@@ -193,6 +205,58 @@ namespace Gauniv.Client.ViewModel
                     FilteredUserGames.Add(g);
                 }
             });
+        }
+
+        // Commande pour simuler le téléchargement d'un jeu et mettre à jour les préférences
+        [RelayCommand]
+        private async Task Download(GameItem item)
+        {
+            if (item == null)
+                return;
+
+            // Simulation d'un téléchargement (1 seconde)
+            await Task.Delay(1000);
+            item.IsDownloaded = true;
+
+            // Mise à jour persistante : ajouter l'ID du jeu si non présent
+            var downloadedList = Preferences.Get(DownloadedGamesKey, "");
+            var downloadedIds = downloadedList.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (!downloadedIds.Contains(item.Id.ToString()))
+            {
+                downloadedIds.Add(item.Id.ToString());
+                Preferences.Set(DownloadedGamesKey, string.Join(",", downloadedIds));
+            }
+        }
+
+        // Commande pour simuler le lancement d'un jeu
+        [RelayCommand]
+        private async Task Play(GameItem item)
+        {
+            if (item == null)
+                return;
+
+            await App.Current.MainPage.DisplayAlert("Jouer",
+                $"Lancement du jeu : {item.Name}", "OK");
+        }
+
+        // Commande pour simuler la suppression d'un téléchargement et mettre à jour les préférences
+        [RelayCommand]
+        private async Task Delete(GameItem item)
+        {
+            if (item == null)
+                return;
+
+            item.IsDownloaded = false;
+            await Task.Delay(200);
+
+            // Mise à jour persistante : retirer l'ID du jeu téléchargé
+            var downloadedList = Preferences.Get(DownloadedGamesKey, "");
+            var downloadedIds = downloadedList.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
+            if (downloadedIds.Contains(item.Id.ToString()))
+            {
+                downloadedIds.Remove(item.Id.ToString());
+                Preferences.Set(DownloadedGamesKey, string.Join(",", downloadedIds));
+            }
         }
     }
 }

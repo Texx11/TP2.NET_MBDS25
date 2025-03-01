@@ -1,6 +1,9 @@
-﻿namespace Gauniv.Client.Model
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
+
+namespace Gauniv.Client.Model
 {
-    public class GameItem
+    public partial class GameItem : ObservableObject
     {
         public int Id { get; set; }
         public string? Name { get; set; }
@@ -8,7 +11,9 @@
         public float Price { get; set; }
         public List<string> Categories { get; set; } = new List<string>();
 
-        // Propriété calculée pour l'affichage des catégories
         public string CategoriesString => string.Join(", ", Categories);
+
+        [ObservableProperty]
+        private bool isDownloaded; 
     }
 }

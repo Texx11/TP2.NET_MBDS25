@@ -6,15 +6,19 @@
     xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     xmlns:converters="clr-namespace:Gauniv.Client.Converters"
-    Title="MyGames" >
+    Title="MyGames"
+    x:Name="MyGamesPage">
 
     <ContentPage.Resources>
         <ResourceDictionary>
+            <!-- Convertisseur pour les entrées numériques -->
             <converters:StringToNullableFloatConverter x:Key="StringToNullableFloatConverter"/>
+            <!-- Convertisseur pour inverser le booléen -->
+            <converters:InvertBoolConverter x:Key="InvertBoolConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <!-- Déclenche LoadUserGamesCommand à l'apparition -->
+    <!-- Déclenche le chargement des jeux lors de l'apparition -->
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior EventName="Appearing" Command="{Binding LoadUserGamesCommand}" />
     </ContentPage.Behaviors>
@@ -28,26 +32,22 @@
             <!-- Zone de filtres -->
             <Frame CornerRadius="5" Padding="10" BackgroundColor="#EFEFEF">
                 <VerticalStackLayout Spacing="10">
-                    <!-- Filtre: Nom -->
                     <HorizontalStackLayout Spacing="5">
                         <Label Text="Nom :" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Entry Text="{Binding SearchName}" Placeholder="Ex: Mario" HorizontalOptions="FillAndExpand" />
                     </HorizontalStackLayout>
-                    <!-- Filtre: Catégorie -->
                     <HorizontalStackLayout Spacing="5">
                         <Label Text="Catégorie :" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Picker ItemsSource="{Binding CategoriesList}"
                                 SelectedItem="{Binding SelectedCategory}"
                                 Title="Toutes" HorizontalOptions="FillAndExpand" />
                     </HorizontalStackLayout>
-                    <!-- Filtre: MinPrice / MaxPrice -->
                     <HorizontalStackLayout Spacing="5">
                         <Label Text="Min Price :" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Entry Text="{Binding MinPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
                         <Label Text="Max Price :" WidthRequest="80" VerticalTextAlignment="Center" />
                         <Entry Text="{Binding MaxPrice, Converter={StaticResource StringToNullableFloatConverter}}" Keyboard="Numeric" WidthRequest="60" />
                     </HorizontalStackLayout>
-                    <!-- Boutons Appliquer / Réinitialiser -->
                     <HorizontalStackLayout Spacing="10">
                         <Button Text="Appliquer les filtres" BackgroundColor="#CCC" Command="{Binding ApplyFiltersCommand}" HorizontalOptions="FillAndExpand" />
                         <Button Text="Réinitialiser" BackgroundColor="#999" Command="{Binding ResetFiltersCommand}" HorizontalOptions="End" />
@@ -71,6 +71,29 @@
                                 <Label Text="{Binding Description}" FontSize="Micro" FontAttributes="Italic" TextColor="Gray" />
                                 <Label Text="{Binding CategoriesString}" FontSize="Micro" TextColor="DarkGray" />
                                 <Label Text="{Binding Price, StringFormat='Price : {0} $'}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center" />
+
+                                <HorizontalStackLayout HorizontalOptions="Center" Spacing="10" Margin="10,0,10,0">
+                                    <Button Text="Télécharger"
+                                            Command="{Binding Source={x:Reference MyGamesPage}, Path=BindingContext.DownloadCommand}"
+                                            CommandParameter="{Binding .}"
+                                            IsVisible="{Binding IsDownloaded, Converter={StaticResource InvertBoolConverter}}"
+                                            BackgroundColor="DarkGreen"
+                                            TextColor="White" />
+
+                                    <Button Text="Jouer"
+                                            Command="{Binding Source={x:Reference MyGamesPage}, Path=BindingContext.PlayCommand}"
+                                            CommandParameter="{Binding .}"
+                                            IsVisible="{Binding IsDownloaded}"
+                                            BackgroundColor="#137EAF"
+                                            TextColor="White" />
+
+                                    <Button Text="Supprimer"
+                                            Command="{Binding Source={x:Reference MyGamesPage}, Path=BindingContext.DeleteCommand}"
+                                            CommandParameter="{Binding .}"
+                                            IsVisible="{Binding IsDownloaded}"
+                                            BackgroundColor="Maroon"
+                                            TextColor="White" />
+                                </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Frame>
                     </DataTemplate>
