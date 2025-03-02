@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Gauniv.Client.Pages"
        xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+       xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
        xmlns:service="clr-namespace:Gauniv.Client.Services"
        Shell.FlyoutBehavior="Flyout"
        Shell.NavBarIsVisible="false"
@@ -12,16 +13,23 @@
        BindingContext="{vm:MenuViewModel}"
        x:DataType="vm:MenuViewModel">
     <!-- Définir les pages principales de l'application -->
+
     <TabBar>
-        <ShellContent Title="Magasin" ContentTemplate="{DataTemplate local:Index}"/>
-        <ShellContent Title="Bibliothèque" ContentTemplate="{DataTemplate local:MyGames}" />
-        <ShellContent Title="Categories" ContentTemplate="{DataTemplate local:Categories}"/>
-        <ShellContent Title="Profil" ContentTemplate="{DataTemplate local:Profile}" />
-        <ShellContent Title="Login" ContentTemplate="{DataTemplate local:Login}"/>
+        <ShellContent Title="Magasin" ContentTemplate="{DataTemplate local:Index}" 
+                      Icon="boutique.png"/>
+        <ShellContent Title="Bibliothèque" ContentTemplate="{DataTemplate local:MyGames}" 
+                      Icon="bibliotheque.png"/>
+        <ShellContent Title="Categories" ContentTemplate="{DataTemplate local:Categories}"
+                      Icon="categorie.png"/>
+        <ShellContent Title="Profil" ContentTemplate="{DataTemplate local:Profile}" 
+                      Icon="profil.png"
+                      IsVisible="False"/>
+        <ShellContent Title="Login" ContentTemplate="{DataTemplate local:Login}"
+                      Icon="login.png"
+                      IsVisible="True"/>
     </TabBar>
-    
-    
-    <MenuItem Text="Help"
+
+        <MenuItem Text="Help"
               IconImageSource="help.png"
               Command="{Binding GoToProfileCommand}"/>
 

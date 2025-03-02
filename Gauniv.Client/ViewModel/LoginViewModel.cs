@@ -50,7 +50,6 @@ namespace Gauniv.Client.ViewModel
                     _navigationService.Navigate<Pages.Index>(new Dictionary<string, object> {});
                 }
             }
-
         }
 
     }

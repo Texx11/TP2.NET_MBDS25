@@ -28,12 +28,6 @@
     </ContentPage.BindingContext>
 
     <ScrollView>
-<<<<<<< HEAD
-        <StackLayout>
-            <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
-            <Label Text="Bibliothèque de jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" Padding="10,0,10,0"/>
-            <CollectionView ItemsSource="{Binding UserGamesDto}" Margin="20">
-=======
         <VerticalStackLayout Padding="10" Spacing="15">
             <!-- Zone de filtres -->
             <Frame CornerRadius="5" Padding="10" BackgroundColor="#EFEFEF">
@@ -64,7 +58,6 @@
             <Label Text="Liste de mes jeux" FontSize="Header" FontAttributes="Bold" HorizontalTextAlignment="Center" TextColor="White" />
 
             <CollectionView ItemsSource="{Binding FilteredUserGames}" Margin="0,0,0,10">
->>>>>>> 8f77e21ea916dcca57120e0ebe6738e8faec7e39
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10" />
                 </CollectionView.ItemsLayout>

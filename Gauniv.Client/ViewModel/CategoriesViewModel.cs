@@ -22,11 +22,7 @@ namespace Gauniv.Client.ViewModel
 
 
         [ObservableProperty]
-        private ObservableCollection<Model.CategoryDto> categoryDtos = new(); // Liste des categories7
-
-        [ObservableProperty]
-        private ObservableCollection<Model.GameDto> gamesCategory = new();
-
+        private ObservableCollection<Model.CategoryDto> categoryDtos = new(); // Liste des categories
 
         private readonly NavigationService _navigationService;
         // Constructeur
@@ -62,25 +58,30 @@ namespace Gauniv.Client.ViewModel
             }
         }
 
-        public async Task GetGameCategories(int categoryId)
+        [RelayCommand]
+        public async Task LoadCategories()
         {
-            await MainThread.InvokeOnMainThreadAsync(async () =>
+            try
             {
-                var lastGameCategory = await NetworkService.Instance.GetGameOfCategory(categoryId);
-                foreach (var g in lastGameCategory)
-                {
-                    Model.GameDto gameDto = new Model.GameDto
+                GetCategories();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur : {ex.Message}");
+            }
+
+        }
+
+        [RelayCommand]
+        public async Task GetGameCategories(Model.CategoryDto categoryDto)
+        {
+            if (categoryDto == null) return;
+            var queryParameters = new Dictionary<string, object>
                     {
-                        Id = g.Id,
-                        Name = g.Name,
-                        Description = g.Description,
-                        Price = g.Price
+                        { "CategoryId", categoryDto.Id },
+                         { "CategoryName", categoryDto.Name }
                     };
-                    gamesCategory.Add(gameDto);
-                }
-                //Navigate to GameCategory
-                _navigationService.Navigate<GameCategory>(new Dictionary<string, object>());
-            });
+            _navigationService.Navigate<Pages.GameCategory>(queryParameters);
         }
     }
 }

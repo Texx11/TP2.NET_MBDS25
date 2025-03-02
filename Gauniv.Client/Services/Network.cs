@@ -1,13 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Gauniv.Network;
 using System;
-<<<<<<< HEAD
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-=======
->>>>>>> 8f77e21ea916dcca57120e0ebe6738e8faec7e39
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 

@@ -5,17 +5,24 @@
             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"  
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
             x:Class="Gauniv.Client.Pages.GameCategory"  
-            Title="GameCategory"
+            Title="CategoryGameView"
             x:Name="CategoryGameView">
-    
+
     <ContentPage.BindingContext>
-        <vm:CategoriesViewModel/>
+        <vm:GameCategoriesViewModel/>
     </ContentPage.BindingContext>
-    
+
     <ScrollView>
         <StackLayout>
+            <!-- Label centré -->
+            <Label Text="{Binding CategoryName, StringFormat='Jeux avec la catégorie : {0}'}"
+                   FontSize="Header"
+                   FontAttributes="Bold" 
+                   HorizontalTextAlignment="Center"
+                   TextColor="White"
+                   Padding="10,0,10,0" />
             <!-- Ruban avec des boutons Magasin, Bibliothèque et Profil -->
-            <CollectionView ItemsSource="{Binding CategoryDtos}" Margin="20">
+            <CollectionView ItemsSource="{Binding GamesCategory}" Margin="20">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"  Span="2" VerticalItemSpacing="10" HorizontalItemSpacing="10"/>
                 </CollectionView.ItemsLayout>
@@ -49,29 +56,18 @@
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Row="3" Grid.Column="1">
                                     <Label Text="{Binding Price, StringFormat='Price : {0} $'}" FontSize="Medium" FontAttributes="Bold" HorizontalOptions="Center"/>
-                                    <Button Text="Buy"
-                                            FontSize="Small"
-                                            BackgroundColor="#137EAF"
-                                            TextColor="White"
-                                            MaximumWidthRequest="200"
-                                            Margin="0,20,0,0"
-                                            Command="{Binding BindingContext.BuyCommand, Source={x:Reference Name=IndexView}}"
-                                            CommandParameter="{Binding .}">
-                                        <Button.Triggers>
-
-                                            <!-- Changement de couleur et effet zoom quand la souris est dessus -->
-                                            <Trigger TargetType="Button" Property="IsPressed" Value="True">
-                                                <Setter Property="BackgroundColor" Value="#0E5C87"/>
-                                                <Setter Property="Scale" Value="0.95"/>
-                                            </Trigger>
-                                        </Button.Triggers>
-                                    </Button>
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            <Button Text="Back To Categories" 
+                    BackgroundColor="#137EAF"
+                    MaximumWidthRequest="400"
+                    TextColor="White" 
+                    Margin="20"
+                    Command="{Binding BackToCategoriesCommand}"/>
         </StackLayout>
     </ScrollView>
 </ContentPage>

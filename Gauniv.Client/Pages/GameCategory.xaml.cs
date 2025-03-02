@@ -10,12 +10,12 @@ namespace Gauniv.Client.Pages
 
     public partial class GameCategory : ContentPage
     {
-        private CategoriesViewModel viewModel;
+        private GameCategoriesViewModel viewModel;
 
         public GameCategory()
         {
             InitializeComponent();
-            viewModel = new CategoriesViewModel();
+            viewModel = new GameCategoriesViewModel();
             BindingContext = viewModel;
         }
     }
