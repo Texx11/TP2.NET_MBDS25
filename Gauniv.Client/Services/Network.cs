@@ -151,6 +151,37 @@ namespace Gauniv.Client.Services
             }
         }
 
+        public async Task<string> DownloadGame(int gameId)
+        {
+            string fileName = $"game_{gameId}.bin";
+            string filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
+            Debug.WriteLine($"File saved at: {filePath}");
+            try
+            {
+                using var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenMem);
+                var response = await httpClient.GetAsync($"{_apiClient.BaseUrl}/api/game/download/{gameId}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Download failed: {response.ReasonPhrase}");
+                    return null;
+                }
+
+                await using var responseStream = await response.Content.ReadAsStreamAsync();
+                await using var fileStream = File.Create(filePath);
+                await responseStream.CopyToAsync(fileStream);
+                Debug.WriteLine("Download successful!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Download failed: {ex.Message}");
+                return null;
+            }
+
+            return filePath;
+        }
+
         public event Action OnConnected;
     }
 }

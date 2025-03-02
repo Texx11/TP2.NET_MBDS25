@@ -214,17 +214,27 @@ namespace Gauniv.Client.ViewModel
             if (item == null)
                 return;
 
-            // Simulation d'un téléchargement (1 seconde)
-            await Task.Delay(1000);
-            item.IsDownloaded = true;
-
-            // Mise à jour persistante : ajouter l'ID du jeu si non présent
-            var downloadedList = Preferences.Get(DownloadedGamesKey, "");
-            var downloadedIds = downloadedList.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries).ToList();
-            if (!downloadedIds.Contains(item.Id.ToString()))
+            try
             {
-                downloadedIds.Add(item.Id.ToString());
-                Preferences.Set(DownloadedGamesKey, string.Join(",", downloadedIds));
+                // Call the API to download the game
+                await _networkService.DownloadGame(item.Id);
+
+                // Mark the game as downloaded in the UI
+                item.IsDownloaded = true;
+
+                // Store downloaded game ID persistently
+                var downloadedList = Preferences.Get(DownloadedGamesKey, "");
+                var downloadedIds = downloadedList.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                if (!downloadedIds.Contains(item.Id.ToString()))
+                {
+                    downloadedIds.Add(item.Id.ToString());
+                    Preferences.Set(DownloadedGamesKey, string.Join(",", downloadedIds));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error downloading game: {ex.Message}");
             }
         }
 
@@ -235,8 +245,27 @@ namespace Gauniv.Client.ViewModel
             if (item == null)
                 return;
 
-            await App.Current.MainPage.DisplayAlert("Jouer",
-                $"Lancement du jeu : {item.Name}", "OK");
+            string fileName = $"game_{item.Id}.bin"; // Adjust the extension if necessary
+            string filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                await App.Current.MainPage.DisplayAlert("Erreur", "Le jeu n'est pas téléchargé.", "OK");
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                await App.Current.MainPage.DisplayAlert("Erreur", $"Impossible de lancer le jeu : {ex.Message}", "OK");
+            }
         }
 
         // Commande pour simuler la suppression d'un téléchargement et mettre à jour les préférences

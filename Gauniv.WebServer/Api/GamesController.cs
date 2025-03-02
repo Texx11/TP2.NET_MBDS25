@@ -148,6 +148,39 @@ namespace Gauniv.WebServer.Api
         }
 
         /**
+         * Recupère le binaire d'un jeu avec son Id
+         * Test : http://localhost:5231/api/game/1/download
+         */
+        [HttpGet("{gameId}")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ActionName("download")]
+        public async Task<ActionResult> DownloadGame(int gameId)
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // TODO : Download a game from API
+            var game = await appDbContext.Games.FindAsync(gameId);
+            if (game == null)
+            {
+                return BadRequest("Game not found.");
+            }
+            string fileName = string.IsNullOrWhiteSpace(game.Name) ? "game.bin" : game.Name;
+            if (game.Payload != null)
+            {
+                return File(game.Payload, "application/octet-stream", fileName);
+            }
+            //Return empty binary file of txt application
+            return File(Array.Empty<byte>(), "application/octet-stream", fileName);
+        }
+
+        /**
          * Ajoute un jeu a la liste des jeux de l'utilisateur
          * --------------------------------------------
          * Test : http://localhost:5231/game/buy/1
