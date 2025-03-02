@@ -1,16 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Gauniv.Network;
 using System;
+<<<<<<< HEAD
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+=======
+>>>>>>> 8f77e21ea916dcca57120e0ebe6738e8faec7e39
 using System.Net.Http.Headers;
-using System.Net.Security;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Store.Preview.InstallControl;
-using Windows.Media.Protection.PlayReady;
 
 namespace Gauniv.Client.Services
 {
@@ -24,13 +23,15 @@ namespace Gauniv.Client.Services
         private string? tokenMem;
         public HttpClient httpClient;
 
+        public string? CurrentUserId { get; private set; }
         public NetworkService()
         {
             httpClient = new HttpClient();
             tokenMem = null;
             _apiClient = new WebServeurLinking(httpClient);
         }
-            
+
+      
         public async Task<ICollection<GameDto>> GetGameList()
         {
             try
@@ -44,6 +45,13 @@ namespace Gauniv.Client.Services
             }
         }
 
+        
+        public async Task<ICollection<GameDto>> GetGameList(int offset, int limit)
+        {
+            return await _apiClient.GameAsync(offset, limit, null);
+        }
+
+        
         public async Task<ICollection<CategoryDto>> GetCategoryList()
         {
             try
@@ -74,6 +82,24 @@ namespace Gauniv.Client.Services
             }
         }
 
+        public async Task<ICollection<GameDto>> GetGameUserList(int offset, int limit)
+        {
+            if (string.IsNullOrEmpty(tokenMem))
+            {
+                return null;
+            }
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenMem);
+            try
+            {
+                return await _apiClient.MygamesAsync(offset, limit, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while fetching user games: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<string> Login(string username, string password)
         {
             var loginRequest = new LoginRequest
@@ -86,6 +112,7 @@ namespace Gauniv.Client.Services
             if (token != null)
             {
                 this.tokenMem = token.AccessToken;
+                CurrentUserId = username;
                 return token.AccessToken;
             }
             return null;

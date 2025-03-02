@@ -4,166 +4,251 @@ using Gauniv.Client.Model;
 using Gauniv.Client.Pages;
 using Gauniv.Client.Services;
 using Gauniv.Network;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
+// Alias pour désambiguïser GameDto provenant du réseau
+using NetworkGameDto = Gauniv.Network.GameDto;
 
 namespace Gauniv.Client.ViewModel
 {
     [QueryProperty(nameof(Username), nameof(Username))]
     public partial class IndexViewModel : ObservableObject
     {
-
         private readonly NavigationService _navigationService;
+        private readonly NetworkService _networkService;
+
+        // Données chargées depuis le serveur (converties en GameItem)
+        private List<GameItem> _allGames = new();
+
+        // Pagination
+        private int limit = 4;
+        private int offset = 0;
 
         [ObservableProperty]
-        private ObservableCollection<Model.GameDto> gamesDto = new(); // Liste des jeux
-
-        //Liste des jeux non achetés par l'utilisateur
-        [ObservableProperty]
-        private ObservableCollection<Model.GameDto> gamesDtoNotUser = new(); // Liste des jeux
-
-        //Liste des jeux affichés
-        public ObservableCollection<Model.GameDto> DisplayedGames => IsConnected ? GamesDtoNotUser : GamesDto;
+        private bool isMoreDataAvailable = true;
 
         [ObservableProperty]
-        private bool isConnected = NetworkService.Instance.TokenMem != null;
+        private bool isConnected = false;
 
         [ObservableProperty]
         private string? username;
 
+        // ---- Filtres ----
+        [ObservableProperty]
+        private string searchName; // champ "Nom"
+
+        [ObservableProperty]
+        private float? minPrice;
+
+        [ObservableProperty]
+        private float? maxPrice;
+
+        [ObservableProperty]
+        private string selectedCategory; // Catégorie choisie
+
+        [ObservableProperty]
+        private bool showPossessed; // Filtrer pour n'afficher que les jeux possédés
+
+        // Liste des catégories pour le Picker
+        [ObservableProperty]
+        private ObservableCollection<string> categoriesList = new();
+
+        // Collection affichée (résultat des filtres)
+        [ObservableProperty]
+        private ObservableCollection<GameItem> displayedGames = new();
+
+        // Commandes
         public ICommand BuyCommand { get; }
+        public ICommand LoadGamesCommand { get; }
+        public ICommand LoadMoreCommand { get; }
+        public ICommand NavigateToLoginCommand { get; }
+        public ICommand ApplyFiltersCommand { get; }
+        public ICommand ResetFiltersCommand { get; }
 
-        private NetworkService _networkService;
-
-
-        // Constructeur
         public IndexViewModel()
         {
-            _networkService = NetworkService.Instance;
-            NetworkService.Instance.OnConnected += Instance_OnConnected;
             _navigationService = NavigationService.Instance;
-            GetGames(); // Récupération des jeux
+            _networkService = NetworkService.Instance;
 
-            BuyCommand = new RelayCommand<Model.GameDto>(OnBuyClicked);
+            // On considère connecté si le token existe
+            IsConnected = !string.IsNullOrEmpty(_networkService.TokenMem);
+
+            BuyCommand = new RelayCommand<GameItem>(OnBuyClicked);
+            LoadGamesCommand = new RelayCommand(OnInitialLoad);
+            LoadMoreCommand = new RelayCommand(OnLoadMore);
+            NavigateToLoginCommand = new RelayCommand(NavigateToLogin);
+            ApplyFiltersCommand = new RelayCommand(ApplyFilters);
+            ResetFiltersCommand = new RelayCommand(ResetFilters);
+
+            _networkService.OnConnected += Instance_OnConnected;
         }
 
-        private void Instance_OnConnected()
+        private async void Instance_OnConnected()
         {
             IsConnected = true;
-            UpdateDisplayedGames();
-
-        }
-        private void UpdateDisplayedGames()
-        {
+            offset = 0;
+            _allGames.Clear();
             DisplayedGames.Clear();
-            var source = IsConnected ? GamesDto : GamesDtoNotUser;
-            foreach (var game in source)
-            {
-                DisplayedGames.Add(game);
-            }
-            Debug.WriteLine(DisplayedGames.Count + " / " + gamesDto.Count + " / " + gamesDtoNotUser.Count);
+            await LoadCategoriesAsync();
+            OnInitialLoad();
         }
 
-        [RelayCommand]
-        public async Task NavigateToMyGame()
+        private async void OnInitialLoad()
         {
-            _navigationService.Navigate<MyGames>(new Dictionary<string, object>());
+            offset = 0;
+            IsMoreDataAvailable = true;
+            _allGames.Clear();
+            DisplayedGames.Clear();
+            // Réinitialisation des filtres par défaut
+            SearchName = string.Empty;
+            MinPrice = null;
+            MaxPrice = null;
+            SelectedCategory = "Toutes";
+            ShowPossessed = false;
+
+            await LoadCategoriesAsync();
+            await LoadMoreInternal();
         }
 
-        [RelayCommand]
-        public void LoadGames()
+        private async void OnLoadMore()
         {
-            this.GetGames();
+            await LoadMoreInternal();
         }
 
-        [RelayCommand]
-        public async Task NavigateToLogin()
+        private void ResetFilters()
         {
-            _navigationService.Navigate<Login>(new Dictionary<string, object>());
+            SearchName = string.Empty;
+            MinPrice = null;
+            MaxPrice = null;
+            SelectedCategory = "Toutes";
+            ShowPossessed = false;
+            ApplyFilters();
         }
 
-        private void OnBuyClicked(Model.GameDto game)
-        {
-            //Login automatique pour tester
-            /*
-            Task.Run(async () =>
-            {
-                await NetworkService.Instance.Login("user@user.com", "password");
-            });*/
-            //Send the game to the database through the API
-            if (_networkService.TokenMem != null)
-            {
-                Task.Run(async () =>
-                {
-                    await NetworkService.Instance.BuyGame(game.Id);
-                    await GetGames();
-                    // BUG REDIRECTION
-                    //_navigationService.Navigate<MyGames>(new Dictionary<string, object>());
-                });
-            }
-            else
-            {
-                //If the user is not connected, we redirect him to the login page
-                this.NavigateToLogin();
-            }
-        }
-
-        public async Task GetGames()
+        private async Task LoadMoreInternal()
         {
             try
             {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
+                // Récupération d'un bloc de jeux depuis l'API (retourne NetworkGameDto)
+                var lastGamesNetwork = await _networkService.GetGameList(offset, limit);
+                if (lastGamesNetwork == null || lastGamesNetwork.Count == 0)
                 {
-                    HashSet<int> gameIds = new HashSet<int>();
-                    if (IsConnected)
+                    IsMoreDataAvailable = false;
+                    return;
+                }
+                offset += lastGamesNetwork.Count;
+                // Conversion des objets réseau en GameItem
+                foreach (NetworkGameDto netGame in lastGamesNetwork)
+                {
+                    var gameItem = new GameItem
                     {
-                        gamesDtoNotUser.Clear();
-                        var userGames = await NetworkService.Instance.GetGameUserList();
-                        foreach (var g in userGames)
-                        {
-                            gameIds.Add(g.Id);
-                        }
-                    }
+                        Id = netGame.Id,
+                        Name = netGame.Name,
+                        Description = netGame.Description,
+                        Price = netGame.Price,
+                        Categories = new List<string>(netGame.Categories)
+                    };
+                    _allGames.Add(gameItem);
+                }
+                ApplyFilters();
 
-                    var lastGames = await NetworkService.Instance.GetGameList();
-                    gamesDto.Clear();
-                    
-                    foreach (var g in lastGames)
-                    {
-                        Model.GameDto gameDto = new Model.GameDto
-                        {
-                            Id = g.Id,
-                            Name = g.Name,
-                            Description = g.Description,
-                            Price = g.Price,
-                        };
-                        gamesDto.Add(gameDto);
-                        if (IsConnected)
-                        {
-                            if (!gameIds.Contains(g.Id))  
-                            {
-                                gamesDtoNotUser.Add(gameDto);
-                                gameIds.Add(g.Id);
-                            }
-                        }
-                    }
-                });
-                
-                Debug.WriteLine("Données récupérées avec succès !");
+                if (lastGamesNetwork.Count < limit)
+                {
+                    IsMoreDataAvailable = false;
+                }
             }
             catch (ApiException ex)
             {
-                Debug.WriteLine($"Erreur API : {ex.Message}");
+                Debug.WriteLine("Erreur API: " + ex.Message);
             }
         }
 
+        private async Task LoadCategoriesAsync()
+        {
+            try
+            {
+                categoriesList.Clear();
+                categoriesList.Add("Toutes");
+                var catDtos = await _networkService.GetCategoryList();
+                if (catDtos != null)
+                {
+                    foreach (var c in catDtos)
+                    {
+                        if (!string.IsNullOrWhiteSpace(c.Name))
+                            categoriesList.Add(c.Name);
+                    }
+                }
+                SelectedCategory = "Toutes";
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Impossible de charger les catégories: " + ex.Message);
+            }
+        }
+
+        private async void ApplyFilters()
+        {
+            var filtered = _allGames.AsEnumerable();
+
+            // Filtre par nom (conversion en minuscules et suppression des espaces)
+            if (!string.IsNullOrWhiteSpace(SearchName))
+            {
+                string searchLower = SearchName.Trim().ToLower();
+                filtered = filtered.Where(g => !string.IsNullOrEmpty(g.Name) &&
+                                               g.Name.Trim().ToLower().Contains(searchLower));
+            }
+            if (MinPrice.HasValue)
+            {
+                filtered = filtered.Where(g => g.Price >= MinPrice.Value);
+            }
+            if (MaxPrice.HasValue)
+            {
+                filtered = filtered.Where(g => g.Price <= MaxPrice.Value);
+            }
+            if (!string.IsNullOrWhiteSpace(SelectedCategory) && SelectedCategory != "Toutes")
+            {
+                filtered = filtered.Where(g => g.Categories.Any(cat => cat.Equals(SelectedCategory, System.StringComparison.OrdinalIgnoreCase)));
+            }
+            if (IsConnected && ShowPossessed)
+            {
+                var userGames = await _networkService.GetGameUserList();
+                var ownedIds = new HashSet<int>(userGames?.Select(x => x.Id) ?? new List<int>());
+                filtered = filtered.Where(g => ownedIds.Contains(g.Id));
+            }
+            var finalList = filtered.ToList();
+
+            DisplayedGames.Clear();
+            foreach (var g in finalList)
+            {
+                DisplayedGames.Add(g);
+            }
+        }
+
+        private void OnBuyClicked(GameItem game)
+        {
+            if (string.IsNullOrEmpty(_networkService.TokenMem))
+            {
+                NavigateToLogin();
+                return;
+            }
+            Task.Run(async () =>
+            {
+                await _networkService.BuyGame(game.Id);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ApplyFilters();
+                });
+            });
+        }
+
+        private void NavigateToLogin()
+        {
+            _navigationService.Navigate<Login>(new Dictionary<string, object>());
+        }
     }
 }
