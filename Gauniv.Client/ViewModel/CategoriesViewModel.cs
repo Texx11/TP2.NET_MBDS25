@@ -22,15 +22,19 @@ namespace Gauniv.Client.ViewModel
 
 
         [ObservableProperty]
-        private ObservableCollection<Model.CategoryDto> categoryDtos = new(); // Liste des jeux
+        private ObservableCollection<Model.CategoryDto> categoryDtos = new(); // Liste des categories7
 
+        [ObservableProperty]
+        private ObservableCollection<Model.GameDto> gamesCategory = new();
+
+
+        private readonly NavigationService _navigationService;
         // Constructeur
         public CategoriesViewModel()
         {
+            _navigationService = NavigationService.Instance;
             GetCategories(); // Récupération des jeux
         }
-
-
         public async Task GetCategories()
         {
             try
@@ -56,6 +60,27 @@ namespace Gauniv.Client.ViewModel
             {
                 Console.WriteLine($"Erreur API : {ex.Message}");
             }
+        }
+
+        public async Task GetGameCategories(int categoryId)
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                var lastGameCategory = await NetworkService.Instance.GetGameOfCategory(categoryId);
+                foreach (var g in lastGameCategory)
+                {
+                    Model.GameDto gameDto = new Model.GameDto
+                    {
+                        Id = g.Id,
+                        Name = g.Name,
+                        Description = g.Description,
+                        Price = g.Price
+                    };
+                    gamesCategory.Add(gameDto);
+                }
+                //Navigate to GameCategory
+                _navigationService.Navigate<GameCategory>(new Dictionary<string, object>());
+            });
         }
     }
 }

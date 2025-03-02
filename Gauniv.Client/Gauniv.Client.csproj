@@ -85,6 +85,9 @@
 	  <Compile Update="Pages\Categories.xaml.cs">
 	    <DependentUpon>Categories.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Pages\GameCategory.xaml.cs">
+	    <DependentUpon>GameCategory.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Pages\MyGames.xaml.cs">
 	    <DependentUpon>MyGames.xaml</DependentUpon>
 	  </Compile>
@@ -95,6 +98,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\Categories.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Pages\GameCategory.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\Login.xaml">

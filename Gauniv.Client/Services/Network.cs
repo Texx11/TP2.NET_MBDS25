@@ -3,6 +3,7 @@ using Gauniv.Network;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Net.Security;
@@ -32,12 +33,27 @@ namespace Gauniv.Client.Services
             
         public async Task<ICollection<GameDto>> GetGameList()
         {
-            return await _apiClient.GameAsync(0, 10, null);
+            try
+            {
+                return await _apiClient.GameAsync(0, 10, null);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while fetching games: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<ICollection<CategoryDto>> GetCategoryList()
         {
-            return await _apiClient.CategoryAsync(0, 10);
+            try
+            {
+                return await _apiClient.CategoryAsync(0, 10);
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Error while fetching categories: {ex.Message}");
+                return null;
+            }
         }
 
         public async Task<ICollection<GameDto>> GetGameUserList()
@@ -75,6 +91,19 @@ namespace Gauniv.Client.Services
             return null;
         }
 
+        public async Task<ICollection<GameDto>> GetGameOfCategory(int categoryId)
+        {
+            try
+            {
+                return await _apiClient.Category2Async(categoryId);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error while getting game of category: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task BuyGame(int gameId)
         {
             if (string.IsNullOrEmpty(tokenMem))
@@ -88,13 +117,13 @@ namespace Gauniv.Client.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while buying game: {ex.Message}");
+                Debug.WriteLine($"Error while buying game: {ex.Message}");
             }
 
             var games = await GetGameUserList();
             if (games != null)
             {
-                Console.WriteLine("Games bought successfully!");
+                Debug.WriteLine("Games bought successfully!");
             }
         }
 
